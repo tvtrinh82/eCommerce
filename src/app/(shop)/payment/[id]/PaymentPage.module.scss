@@ -1,0 +1,108 @@
+.container {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.paymentCard {
+    width: 100%;
+    max-width: 480px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8e8e8;
+    overflow: hidden;
+}
+
+.header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #262626;
+        margin: 0;
+    }
+
+    .tag {
+        font-size: 12px;
+        color: #8c8c8c;
+        background-color: #fafafa;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid #d9d9d9;
+    }
+}
+
+.content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .label {
+        font-size: 14px;
+        color: #595959;
+    }
+
+    .value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #262626;
+    }
+
+    .highlightAmount {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff4d4f;
+    }
+
+    .expiredNotice {
+        font-size: 13px;
+        color: #8c8c8c;
+    }
+}
+
+.divider {
+    height: 1px;
+    background-color: #f0f0f0;
+    margin: 4px 0;
+}
+
+.actions {
+    padding: 16px 24px 24px 24px;
+    display: flex;
+    gap: 12px;
+
+    .successButton {
+        flex: 1;
+        height: 40px;
+    }
+
+    .failedButton {
+        flex: 1;
+        height: 40px;
+    }
+}
+
+.loadingWrapper,
+.errorWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+}
