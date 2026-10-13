@@ -1,0 +1,37 @@
+.container {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.actionButton {
+  border-radius: 8px;
+}
+
+.detailBox {
+  margin-top: 24px;
+  background-color: #fafafa;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.successText {
+  color: #059669;
+  font-weight: 600;
+}
+
+.errorText {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.loadingWrap {
+  text-align: center;
+  padding: 100px 0;
+}

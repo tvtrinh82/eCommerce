@@ -1,26 +1,52 @@
-export type OrderStatus = 'PENDING' | 'AWAITING_PAYMENT' | 'PAID' | 'CANCELLED' | 'PROCESSING' | 'CONFIRMED' | 'COMPLETED' | 'REFUND_REQUESTED' | 'REFUNDED';
+export type OrderStatus =
+  | 'PENDING'
+  | 'AWAITING_PAYMENT'
+  | 'PAID'
+  | 'CONFIRMED'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'REFUND_REQUESTED'
+  | 'REFUNDED';
+
+export type OrderPaymentStatus = 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | string;
 
 export interface OrderItem {
-  id: number;
+  id?: number;
   productId: number;
   productName: string;
-  price: number;
+  name?: string;
   quantity: number;
-  subtotal: number;
+  unitPrice?: number;
+  price?: number;
+  subTotal?: number;
+  subtotal?: number;
+  imageUrl?: string | null;
 }
 
-export interface OrderDetail {
+export interface Order {
   id: number;
+  customerId: number;
   customerName: string;
-  customerEmail: string;
+  customerEmail?: string;
   customerPhone?: string;
   shippingAddress?: string;
-  status: OrderStatus;
-  paymentStatus?: string;
   items: OrderItem[];
   totalAmount: number;
+  status: OrderStatus;
+  paymentStatus?: OrderPaymentStatus;
   paidAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
   cancelReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OrderDetail = Order;
+
+export interface CreateOrderRequest {
+  customerId: number;
+  items: {
+    productId: number;
+    quantity: number;
+  }[];
 }

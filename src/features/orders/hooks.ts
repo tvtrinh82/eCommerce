@@ -1,53 +1,86 @@
-import { useQuery, useMutation, useQueryClient, Query } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orderApi } from './api';
-import { OrderDetail } from './types';
+import { CreateOrderRequest, OrderStatus } from './types';
+import { App } from 'antd';
 
-export const useOrders = (params: any, options?: { refetchInterval?: number | false }) => {
+export const ORDERS_QUERY_KEY = ['orders'];
+
+export function useOrders(params?: any, options?: { refetchInterval?: number | false }) {
   return useQuery({
-    queryKey: ['orders', params],
+    queryKey: [...ORDERS_QUERY_KEY, params],
     queryFn: () => orderApi.getOrders(params),
-    refetchInterval: options?.refetchInterval ?? 3000, // Tự động làm mới mỗi 3 giây
-    refetchOnWindowFocus: true, // Tự động làm mới ngay khi chuyển tab quay lại
-  });
-};
-
-export const useOrderDetail = (orderId: string | number) => {
-  return useQuery({
-    queryKey: ['order', orderId],
-    queryFn: () => orderApi.getOrderDetail(orderId),
-    enabled: !!orderId,
-    refetchInterval: (query: Query<OrderDetail, Error>) => {
-      const order = query.state.data;
-      // Nếu đã hoàn thành hoặc đã huỷ thì giảm tần suất hoặc dừng, còn đang PENDING / AWAITING_PAYMENT thì poll mỗi 3 giây
-      if (order?.status === 'CANCELLED' || (order?.paymentStatus === 'PAID' && order?.status === 'COMPLETED')) {
-        return false;
-      }
-      return 3000;
-    },
+    refetchInterval: options?.refetchInterval ?? 3000,
     refetchOnWindowFocus: true,
   });
-};
+}
 
-export const useOrder = useOrderDetail;
+export function useCustomerOrders(
+  customerId: number | undefined | null,
+  params?: { page?: number; size?: number; status?: OrderStatus; sort?: string }
+) {
+  return useQuery({
+    queryKey: [...ORDERS_QUERY_KEY, 'customer', customerId, params],
+    queryFn: () => orderApi.getCustomerOrders(customerId as number, params),
+    enabled: !!customerId,
+    staleTime: 30 * 1000,
+  });
+}
 
-export const useCreateOrder = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: any) => orderApi.createOrder(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+export function useOrderDetail(id: number | string | undefined | null) {
+  return useQuery({
+    queryKey: ['order', id],
+    queryFn: () => orderApi.getOrderById(id as number | string),
+    enabled: !!id,
+    refetchInterval: (query) => {
+      const order = query.state.data;
+      if (
+        order?.status === 'CANCELLED' ||
+        (order?.paymentStatus === 'PAID' && order?.status === 'COMPLETED')
+      ) {
+        return false;
+      }
+      return 4000;
     },
   });
-};
+}
 
-export const useUpdateOrderItems = () => {
+export function useCreateOrder() {
   const queryClient = useQueryClient();
+  const { message } = App.useApp();
+
+  return useMutation({
+    mutationFn: (data: CreateOrderRequest) => orderApi.createOrder(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+    onError: (err: any) => {
+      const errorMsg = err?.message || err?.response?.data?.message || 'Tạo đơn hàng thất bại';
+      message.error(errorMsg);
+    },
+  });
+}
+
+export function useUpdateOrderItems() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ id, data }: { id: string | number; data: any }) =>
       orderApi.updateOrderItems(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['order', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
     },
   });
-};
+}
+
+export function useDeleteOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number | string) => orderApi.deleteOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+    },
+  });
+}

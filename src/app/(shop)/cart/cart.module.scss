@@ -1,0 +1,286 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 24px 0;
+}
+
+.cartLayout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.itemList {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.mobileSelectAllBar {
+  display: none;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #374151;
+
+  @media (max-width: 640px) {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.itemHeader {
+  display: grid;
+  grid-template-columns: 36px 2.5fr 1fr 1.2fr 1fr 40px;
+  padding: 14px 20px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #4b5563;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.headerCheckboxWrap {
+  display: flex;
+  align-items: center;
+}
+
+.rowCheckboxWrap {
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    position: absolute;
+    top: 20px;
+    left: 14px;
+  }
+}
+
+.itemRow {
+  display: grid;
+  grid-template-columns: 36px 2.5fr 1fr 1.2fr 1fr 40px;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 12px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 640px) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+    padding: 16px 16px 16px 46px;
+  }
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.productImage {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  border: 1px solid #f3f4f6;
+  object-fit: contain;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.productName {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+  cursor: pointer;
+
+  &:hover {
+    color: #2563eb;
+  }
+}
+
+.unitPrice {
+  font-size: 14.5px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qtyBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #2563eb;
+    color: #2563eb;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.qtyValue {
+  min-width: 30px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtotal {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.deleteBtn {
+  color: #ef4444;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #fee2e2;
+  }
+
+  @media (max-width: 640px) {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+  }
+}
+
+.summaryCard {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+}
+
+.summaryTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 18px 0;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14.5px;
+  color: #6b7280;
+}
+
+.summaryValue {
+  font-weight: 600;
+  color: #374151;
+}
+
+.divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 16px 0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+
+.totalLabel {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.totalAmount {
+  font-size: 24px;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.checkoutBtn {
+  width: 100%;
+  height: 42px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.continueBtn {
+  width: 100%;
+  height: 38px;
+  font-size: 13px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 14px 60px;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .summaryCard {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+}
+

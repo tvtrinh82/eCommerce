@@ -1,0 +1,186 @@
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+  min-height: 75vh;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+
+  span {
+    color: #2563eb;
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  &.completed, &.paid {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+  }
+
+  &.confirmed, &.processing {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+  }
+
+  &.cancelled {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+  }
+
+  &.pending, &.awaiting {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: #fde68a;
+  }
+}
+
+.backButton {
+  border-radius: 8px;
+  height: 38px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 868px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mainCard, .sideCard {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.tableItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tableThumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  background: #f9fafb;
+}
+
+.tableThumbFallback {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.tableName {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.summaryFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 15px;
+  color: #4b5563;
+}
+
+.totalAmountText {
+  font-size: 22px;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.sideSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.infoRow {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #4b5563;
+
+  strong {
+    color: #111827;
+    margin-right: 4px;
+  }
+}
+
+.priceHighlight {
+  font-size: 24px;
+  font-weight: 800;
+  color: #2563eb;
+  margin: 0 0 16px 0;
+}
+
+.awaitingHint {
+  color: #d97706;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.alertStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loadingWrap {
+  text-align: center;
+  padding: 100px 0;
+}
+
+.errorWrap {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
