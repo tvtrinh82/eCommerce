@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Suspense } from "react";
 import Providers from "@/lib/providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const font = Plus_Jakarta_Sans({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-main",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "E-Commerce Dashboard",
-  description: "Modern E-Commerce Dashboard created with Next.js and Ant Design.",
+  title: "E-Commerce - Mua sắm thông minh & Đẳng cấp",
+  description: "Hệ thống mua sắm thương mại điện tử hiện đại, tiện lợi, uy tín và chất lượng cao.",
 };
 
 export default function RootLayout({
@@ -18,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="vi" className={font.variable}>
+      <body className={font.className}>
         <Suspense fallback={null}>
           <AntdRegistry>
             <Providers>

@@ -1,0 +1,226 @@
+.card {
+  container-type: inline-size;
+  container-name: card;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    border-color: #d1d5db;
+
+    .img {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.imageWrap {
+  width: 100%;
+  padding-top: 80%; /* 4:3 aspect ratio approx or 100% square */
+  position: relative;
+  background-color: #f9fafb;
+  overflow: hidden;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 16px;
+  transition: transform 0.35s ease;
+  box-sizing: border-box;
+}
+
+.stockTag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+
+  &.inStock {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.outOfStock {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+  }
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  min-height: 40px;
+
+  &:hover {
+    color: #2563eb;
+  }
+}
+
+.priceWrap {
+  margin-top: auto;
+  margin-bottom: 14px;
+}
+
+.price {
+  font-size: 17px;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.viewBtn {
+  flex: 1;
+  height: 34px !important;
+  padding: 0 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 600;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease;
+
+  :global(.ant-btn-icon) {
+    font-size: 13px !important;
+    margin-inline-end: 4px !important;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    border-color: #2563eb !important;
+    color: #2563eb !important;
+  }
+}
+
+.cartBtn {
+  flex: 1;
+  height: 34px !important;
+  padding: 0 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 600;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease;
+
+  :global(.ant-btn-icon) {
+    font-size: 13px !important;
+    margin-inline-end: 4px !important;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Tự động thích ứng khi card bị thu hẹp dưới 225px (responsive) */
+@container card (max-width: 225px) {
+  .actions {
+    gap: 6px;
+  }
+
+  .viewBtn {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+
+    span {
+      display: none !important;
+    }
+
+    :global(.ant-btn-icon) {
+      margin-inline-end: 0 !important;
+      font-size: 14px !important;
+    }
+  }
+
+  .cartBtn {
+    flex: 1 !important;
+    height: 34px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Fallback responsive cho mobile screen */
+@media (max-width: 600px) {
+  .viewBtn {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+
+    span {
+      display: none !important;
+    }
+
+    :global(.ant-btn-icon) {
+      margin-inline-end: 0 !important;
+    }
+  }
+
+  .cartBtn {
+    flex: 1 !important;
+    height: 34px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+}

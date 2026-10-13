@@ -5,6 +5,8 @@ import { Layout, Menu, Typography, Button, Avatar, Space, Badge, Dropdown, messa
 import {LayoutDashboard,ShoppingCart,Users,Package,Settings,Bell,Search,Globe,LogOut,User,UserCheck,Mail,BarChart
 } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { removeAuthToken, getAuthToken, setAuthToken } from "@/lib/auth-cookie";
+import { getUserDisplayName } from "@/lib/format";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -18,29 +20,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   React.useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const res = await fetch("/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.data || data);
+      const token = localStorage.getItem("token") || getAuthToken();
+      if (!token) {
+        router.push("/auth/login");
+        return;
+      }
+      try {
+        localStorage.setItem("token", token);
+        setAuthToken(token);
+      } catch {}
+
+      try {
+        const res = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const userData = data.data || data;
+          setUser(userData);
+
+          const role = String(userData?.role || "").toUpperCase();
+          if (role === "USER" || role === "ROLE_USER") {
+            messageApi.error("Bạn không có quyền truy cập trang quản trị");
+            router.push("/");
           }
-        } catch (e) {
-          console.error("Failed to fetch user");
+        } else if (res.status === 401 || res.status === 403) {
+          router.push("/auth/login");
         }
+      } catch (e) {
+        console.error("Failed to fetch user");
       }
     };
     fetchUser();
-  }, []);
+  }, [router, messageApi]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    removeAuthToken();
     messageApi.success("Đã đăng xuất");
     router.push("/auth/login");
   };
+
+  const displayName = getUserDisplayName(user) || "Admin";
 
   const userMenu = {
     items: [
@@ -48,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         key: 'profile',
         label: (
           <div style={{ padding: '4px 0', minWidth: 120 }}>
-            <Typography.Text strong style={{ display: 'block' }}>{user?.name || user?.username || "Admin"}</Typography.Text>
+            <Typography.Text strong style={{ display: 'block' }}>{displayName}</Typography.Text>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>{user?.email || "admin@example.com"}</Typography.Text>
           </div>
         ),
@@ -63,6 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       },
     ],
   };
+
   const menuItems = [
     { key: "/admin", label: "Tổng quan", icon: <LayoutDashboard size={20} /> },
     { key: "/admin/products", label: "Sản phẩm", icon: <Package size={20} /> },
@@ -143,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Space size="large">
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']} getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}>
               <Avatar style={{ backgroundColor: '#515154', cursor: 'pointer' }}>
-                {user?.name ? user.name.charAt(0).toUpperCase() : user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
+                {displayName ? displayName.charAt(0).toUpperCase() : 'A'}
               </Avatar>
             </Dropdown>
           </Space>

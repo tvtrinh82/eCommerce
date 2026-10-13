@@ -11,6 +11,8 @@ import {
   DollarSign
 } from "lucide-react";
 
+import { getAuthToken } from "@/lib/auth-cookie";
+
 const { Title, Text } = Typography;
 
 interface DashboardData {
@@ -32,7 +34,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token") || getAuthToken();
         const headers = { "Authorization": token ? `Bearer ${token}` : "" };
 
         // Fetch orders and products in parallel

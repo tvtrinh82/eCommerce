@@ -16,6 +16,7 @@ import {
 } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { setAuthToken } from "@/lib/auth-cookie";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -79,16 +80,41 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
 
       const token =
         data?.data?.accessToken || data?.accessToken || data?.token || "";
-      const userRole = data?.data?.user?.role;
+      const rawRole =
+        data?.data?.user?.role ||
+        data?.user?.role ||
+        data?.data?.role ||
+        data?.role ||
+        data?.data?.user?.roles?.[0]?.name ||
+        data?.data?.user?.roles?.[0] ||
+        "";
+      const userRole = String(rawRole).trim().toUpperCase();
 
-      localStorage.setItem("token", token);
-      if (userRole) {
-        localStorage.setItem("role", userRole);
+      if (!token) {
+        throw new Error("Đăng nhập thành công nhưng máy chủ không trả về access token.");
       }
+
+      // Store the token in the cookie used by API requests. Keep the legacy
+      // localStorage copy for the admin layout, which still reads that key.
+      setAuthToken(token);
+      try {
+        localStorage.setItem("token", token);
+        if (userRole) {
+          localStorage.setItem("role", userRole);
+        }
+      } catch {}
 
       message.success("Đăng nhập thành công!");
 
-      if (userRole === "ADMIN" || userRole === "PRODUCT_OWNER") {
+      const isManager =
+        userRole === "ADMIN" ||
+        userRole === "ROLE_ADMIN" ||
+        userRole === "PRODUCT_OWNER" ||
+        userRole === "ROLE_PRODUCT_OWNER" ||
+        userRole === "PO" ||
+        userRole === "ROLE_PO";
+
+      if (isManager) {
         router.push("/admin");
       } else {
         router.push("/");

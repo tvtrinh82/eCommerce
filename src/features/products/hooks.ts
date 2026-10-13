@@ -1,51 +1,55 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productApi } from './api';
-import { ProductPayload, Product } from './types';
+import { ProductListParams, ProductPayload, PageResponse, Product } from './types';
 
-export const useProducts = (params: any = {}) => {
+export const PRODUCTS_QUERY_KEY = ['products'];
+
+export function useProducts(params?: ProductListParams, initialData?: PageResponse<Product>) {
   return useQuery({
-    queryKey: ['products', params],
-    queryFn: async () => {
-      // Ant Design UI dùng page bắt đầu từ 1, nhưng Spring Boot BE yêu cầu page bắt đầu từ 0
-      const apiParams = { 
-        ...params, 
-        keyword: params.name,
-        page: params.page ? Number(params.page) - 1 : 0 
-      };
-      delete apiParams.name;
-      const response: any = await productApi.getProducts(apiParams);
-      // Giả sử API trả về định dạng phân trang Spring Boot: { content: [], totalElements: ... }
-      return response.data;
-    }
+    queryKey: [...PRODUCTS_QUERY_KEY, params],
+    queryFn: () => productApi.getProducts(params),
+    staleTime: 60 * 1000,
+    ...(initialData ? { initialData } : {}),
   });
-};
+}
 
-export const useCreateProduct = () => {
+
+export function useProductDetail(id: number | string) {
+  return useQuery({
+    queryKey: ['product', id],
+    queryFn: () => productApi.getProductById(id),
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useCreateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ProductPayload) => productApi.createProduct(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    }
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+    },
   });
-};
+}
 
-export const useUpdateProduct = () => {
+export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ProductPayload }) => productApi.updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: number | string; data: Partial<ProductPayload> }) =>
+      productApi.updateProduct(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    }
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+    },
   });
-};
+}
 
-export const useDeleteProduct = () => {
+export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => productApi.deleteProduct(id),
+    mutationFn: (id: number | string) => productApi.deleteProduct(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    }
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+    },
   });
-};
+}
