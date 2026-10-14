@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateCustomer, useUpdateCustomer } from '../hooks';
-
+import styles from './CustomerModal.module.scss';
 interface CustomerModalProps {
   open: boolean;
   onClose: () => void;
@@ -51,7 +51,7 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
 
   const onSubmit = (values: any) => {
     const payload = { ...values };
-    
+
     const handleApiError = (err: any) => {
       // Backend Validation Errors (400 Bad Request)
       if (err?.response?.data?.data && typeof err.response.data.data === 'object') {
@@ -65,7 +65,7 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
         if (fieldErrors.phone) {
           setError('phone', { type: 'manual', message: fieldErrors.phone });
         }
-      } 
+      }
       // Backend Conflict or generic errors
       else if (err?.response?.data?.message) {
         if (err.response.data.message.toLowerCase().includes('email')) {
@@ -110,7 +110,7 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
     <>
       {contextHolder}
       <Modal
-        title={<span style={{ fontSize: 20 }}>{customer ? 'Sửa Khách Hàng' : 'Thêm Khách Hàng'}</span>}
+        title={<span className={styles.modalTitle}>{customer ? 'Sửa Khách Hàng' : 'Thêm Khách Hàng'}</span>}
         open={open}
         width={500}
         onCancel={onClose}
@@ -119,10 +119,10 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
           <Button key="submit" type="primary" size="large" onClick={handleSubmit(onSubmit)} loading={isCreating || isUpdating}>Lưu</Button>
         ]}
       >
-        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>
-              Họ tên <span style={{ color: 'red' }}>*</span>
+        <div className={styles.form}>
+          <div className={styles.formItem}>
+            <label className={styles.label}>
+              Họ tên <span className={styles.required}>*</span>
             </label>
             <Controller
               name="name"
@@ -131,12 +131,12 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
                 <Input {...field} size="large" status={errors.name ? 'error' : ''} placeholder="Nhập họ tên" />
               )}
             />
-            {errors.name && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{String(errors.name.message)}</div>}
+            {errors.name && <div className={styles.errorMessage}>{String(errors.name.message)}</div>}
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>
-              Email <span style={{ color: 'red' }}>*</span>
+          <div className={styles.formItem}>
+            <label className={styles.label}>
+              Email <span className={styles.required}>*</span>
             </label>
             <Controller
               name="email"
@@ -145,11 +145,11 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
                 <Input {...field} size="large" status={errors.email ? 'error' : ''} placeholder="Nhập email" />
               )}
             />
-            {errors.email && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{String(errors.email.message)}</div>}
+            {errors.email && <div className={styles.errorMessage}>{String(errors.email.message)}</div>}
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Số điện thoại</label>
+          <div className={styles.formItem}>
+            <label className={styles.label}>Số điện thoại</label>
             <Controller
               name="phone"
               control={control}
@@ -157,32 +157,20 @@ export const CustomerModal = ({ open, onClose, customer }: CustomerModalProps) =
                 <Input {...field} size="large" status={errors.phone ? 'error' : ''} placeholder="Nhập số điện thoại" />
               )}
             />
-            {errors.phone && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{String(errors.phone.message)}</div>}
+            {errors.phone && <div className={styles.errorMessage}>{String(errors.phone.message)}</div>}
           </div>
 
           {/* Chọn trạng thái (chỉ hiện khi sửa khách hàng) */}
           {customer && (
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>
+            <div className={styles.formItem}>
+              <label className={styles.label}>
                 Trạng thái
               </label>
               <Controller
                 name="status"
                 control={control}
                 render={({ field }) => (
-                  <select
-                    {...field}
-                    style={{
-                      width: '100%',
-                      height: 40,
-                      padding: '0 12px',
-                      borderRadius: 8,
-                      border: '1px solid #d9d9d9',
-                      fontSize: 15,
-                      background: '#fff',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <select {...field} className={styles.select}>
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="DEACTIVE">DEACTIVE</option>
                   </select>

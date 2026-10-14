@@ -5,6 +5,7 @@ import { Card, Typography, Button, Modal, Timeline, Table, message, Spin } from 
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiClient } from "@/lib/api-client";
 import dayjs from "dayjs";
+import styles from "./OrderDetail.module.scss";
 
 const { Title, Text } = Typography;
 
@@ -36,10 +37,60 @@ export default function OrderDetailPage() {
           // ignore
         }
       }
+
+      // Đảm bảo lấy được ảnh sản phẩm cho từng sản phẩm trong đơn hàng
+      if (orderData && Array.isArray(orderData.items) && orderData.items.length > 0) {
+        try {
+          const itemsWithImages = await Promise.all(
+            orderData.items.map(async (item: any) => {
+              if (item.imageUrl || item.image || item.image_url) {
+                return {
+                  ...item,
+                  imageUrl: item.imageUrl || item.image || item.image_url,
+                };
+              }
+              const pId = item.productId || item.id;
+              if (pId) {
+                try {
+                  const prodRes: any = await apiClient.get(`/products/${pId}`);
+                  const prodData = prodRes.data?.data || prodRes.data || prodRes;
+                  const img = prodData?.imageUrl || prodData?.image || prodData?.image_url;
+                  return {
+                    ...item,
+                    imageUrl: img || null,
+                  };
+                } catch {
+                  return item;
+                }
+              }
+              return item;
+            })
+          );
+          orderData.items = itemsWithImages;
+        } catch (imgErr) {
+          console.error("Lỗi khi tải ảnh sản phẩm:", imgErr);
+        }
+      }
+
       setOrder(orderData);
       try {
-        const ticketRes: any = await apiClient.get(`/tickets/order/${orderId}`);
-        setTicket(ticketRes.data?.data || ticketRes.data);
+        // Lấy ticket theo orderId trước
+        const ticketRes: any = await apiClient.get(`/tickets/order/${orderId}`).catch(() => null);
+        let foundTicket = ticketRes?.data?.data || ticketRes?.data || ticketRes;
+        
+        if (!foundTicket || !foundTicket.id) {
+          // Fallback tìm trong inbox
+          const inboxRes: any = await apiClient.get(`/tickets/inbox?page=0&size=100`).catch(() => null);
+          const inboxTickets =
+            inboxRes?.data?.content ||
+            inboxRes?.content ||
+            inboxRes?.data ||
+            (Array.isArray(inboxRes) ? inboxRes : []);
+          foundTicket = (Array.isArray(inboxTickets) ? inboxTickets : []).find(
+            (t: any) => String(t.orderId) === String(orderId)
+          );
+        }
+        setTicket(foundTicket || null);
       } catch (err) {
         setTicket(null);
       }
@@ -64,12 +115,28 @@ export default function OrderDetailPage() {
         try {
           setSubmitting(true);
           const requestBody = actionType === 'reject' ? { comment: 'Từ chối đơn hàng' } : {};
-          const targetTicket = ticket || (await apiClient.get(`/tickets/order/${orderId}`)).data?.data;
+          let targetTicket = ticket;
+          if (!targetTicket?.id) {
+            // Thử tìm lại qua inbox
+            const inboxRes: any = await apiClient.get(`/tickets/inbox?page=0&size=100`);
+            const inboxTickets =
+              inboxRes?.data?.content ||
+              inboxRes?.content ||
+              inboxRes?.data ||
+              (Array.isArray(inboxRes) ? inboxRes : []);
+            targetTicket = (Array.isArray(inboxTickets) ? inboxTickets : []).find(
+              (t: any) => String(t.orderId) === String(orderId)
+            );
+          }
+          if (!targetTicket?.id) {
+            message.warning("Đơn hàng này không có phiếu chờ duyệt trong hộp thư của bạn (hoặc cần quyền Product Owner duyệt trước).");
+            return;
+          }
           await apiClient.post(`/tickets/${targetTicket.id}/${actionType}`, requestBody);
           message.success(`${actionLabel} thành công`);
           await fetchOrderDetail();
         } catch (err: any) {
-          message.error(err?.response?.data?.message || `Thao tác thất bại, vui lòng thử lại!`);
+          message.error(err?.response?.data?.message || err?.message || `Thao tác thất bại, vui lòng thử lại!`);
         } finally {
           setSubmitting(false);
         }
@@ -105,7 +172,7 @@ export default function OrderDetailPage() {
 
   if (loading && !order) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 0" }}>
+      <div className={styles.loadingWrap}>
         <Spin size="large" />
       </div>
     );
@@ -151,7 +218,7 @@ export default function OrderDetailPage() {
       return (
         <Button
           type="primary"
-          style={{ borderRadius: 8, height: 38, padding: "0 20px", fontWeight: 600 }}
+          className={styles.actionBtn}
           loading={submitting}
           onClick={() => handleStatusChange("COMPLETED", "Hoàn thành")}
         >
@@ -159,13 +226,23 @@ export default function OrderDetailPage() {
         </Button>
       );
     }
+    // Nếu đơn hàng đang PENDING nhưng vé đã được duyệt (APPROVED) thì không hiện nút duyệt đơn nữa
+    if (ticket && ticket.status === "APPROVED") {
+      return null;
+    }
+
     if (currentStatus === "PENDING") {
+      // Nếu vé đã bị REJECTED, CANCELLED hoặc EXPIRED thì cũng không hiện nút duyệt
+      if (ticket && ticket.status !== "PENDING_APPROVAL" && ticket.status !== "PENDING_PO_APPROVE" && ticket.status !== "PENDING_AD_APPROVE") {
+        return null;
+      }
+
       const approveText = "Duyệt đơn";
       return (
         <>
           <Button
             danger
-            style={{ borderRadius: 8, height: 38, padding: "0 20px", fontWeight: 600 }}
+            className={styles.actionBtn}
             loading={submitting}
             onClick={() => handleTicketAction('reject', 'Từ chối đơn hàng')}
           >
@@ -173,7 +250,7 @@ export default function OrderDetailPage() {
           </Button>
           <Button
             type="primary"
-            style={{ borderRadius: 8, height: 38, padding: "0 20px", fontWeight: 600 }}
+            className={styles.actionBtn}
             loading={submitting}
             onClick={() => handleTicketAction('approve', approveText)}
           >
@@ -191,18 +268,33 @@ export default function OrderDetailPage() {
       title: "Sản phẩm",
       dataIndex: "productName",
       key: "productName",
-      render: (text: string, item: any) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={text} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
-          ) : (
-            <div style={{ width: 40, height: 40, backgroundColor: '#f0f0f0', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 10, color: '#999' }}>No img</span>
+      render: (text: string, item: any) => {
+        const imgUrl = item.imageUrl || item.image || item.image_url;
+        return (
+          <div className={styles.productCell}>
+            {imgUrl ? (
+              <img
+                src={imgUrl}
+                alt={text || "Ảnh sản phẩm"}
+                className={styles.productImg}
+                onError={(e: any) => {
+                  e.currentTarget.style.display = "none";
+                  if (e.currentTarget.nextSibling) {
+                    e.currentTarget.nextSibling.style.display = "flex";
+                  }
+                }}
+              />
+            ) : null}
+            <div
+              className={styles.noImgBox}
+              style={{ display: imgUrl ? "none" : "flex" }}
+            >
+              <span className={styles.noImgText}>SP</span>
             </div>
-          )}
-          <span>{text || item.name || "Sản phẩm"}</span>
-        </div>
-      ),
+            <span style={{ fontWeight: 600, fontSize: 15 }}>{text || item.name || "Sản phẩm"}</span>
+          </div>
+        );
+      },
     },
     {
       title: "Đơn giá",
@@ -244,110 +336,93 @@ export default function OrderDetailPage() {
 
   return (
     <Card
-      style={{
-        borderRadius: 12,
-        border: "1px solid #dcdfe6",
-        boxShadow: "none",
-        maxWidth: 1000,
-        margin: "0 auto",
-      }}
+      className={styles.card}
       styles={{ body: { padding: "24px 28px" } }}
     >
       {/* 1. Header Đơn hàng */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-        }}
-      >
+      <div className={styles.headerRow}>
         {/* Khối bên trái: Mã đơn & Badge trạng thái */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Title level={4} style={{ margin: 0, fontWeight: 700, fontSize: 20, color: "#1f1f1f" }}>
+        <div className={styles.headerLeft}>
+          <Title level={4} className={styles.pageTitle}>
             Đơn hàng #{order.id}
           </Title>
           <span
-            style={{
-              padding: "2px 18px",
-              borderRadius: 999,
-              border: `1.5px solid ${badgeStyle.border}`,
-              backgroundColor: badgeStyle.bg,
-              color: badgeStyle.color,
-              fontSize: 13,
-              fontWeight: 500,
-            }}
+            className={styles.statusBadge}
+            style={
+              {
+                "--badge-border": badgeStyle.border,
+                "--badge-bg": badgeStyle.bg,
+                "--badge-color": badgeStyle.color,
+              } as React.CSSProperties
+            }
           >
-            {currentStatus}
+            {currentStatus === "COMPLETED"
+              ? "Hoàn thành"
+              : currentStatus === "CANCELLED"
+              ? "Đã hủy"
+              : currentStatus === "PAID"
+              ? "Đã thanh toán"
+              : currentStatus === "CONFIRMED"
+              ? "Đã xác nhận"
+              : currentStatus === "PROCESSING"
+              ? "Đang xử lý / Giao"
+              : currentStatus === "AWAITING_PAYMENT"
+              ? "Chờ thanh toán"
+              : currentStatus === "REFUND_REQUESTED"
+              ? "Yêu cầu hoàn tiền"
+              : currentStatus === "REFUNDED"
+              ? "Đã hoàn tiền"
+              : "Chờ duyệt"}
           </span>
         </div>
 
         {/* Khối bên phải: Nút Thoát trước, Nút Duyệt đơn sau */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className={styles.headerRight}>
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => router.back()}
-            style={{ borderRadius: 8, height: 38 }}
+            className={styles.exitBtn}
           >
-            Thoát
+            Quay lại
           </Button>
           {renderActionButton()}
         </div>
       </div>
 
       {/* 2. Grid 2 cột: Thông tin đơn & Lịch sử trạng thái */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1.2fr",
-          gap: 20,
-          alignItems: "stretch",
-          marginBottom: 24,
-        }}
-      >
+      <div className={styles.infoGrid}>
         {/* Khung Thông tin đơn */}
-        <div
-          style={{
-            border: "1px solid #d9d9d9",
-            borderRadius: 10,
-            padding: "20px 24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            fontSize: 15,
-            color: "#1f1f1f",
-          }}
-        >
-          <Title level={5} style={{ margin: 0, marginBottom: 4, fontWeight: 700 }}>
+        <div className={styles.orderInfoCard}>
+          <Title level={5} className={styles.cardTitle}>
             Thông tin đơn
           </Title>
           <div>
             Khách hàng:{" "}
-            <span style={{ color: "#262626" }}>{order.customerName || "—"}</span>
+            <span className={styles.infoValue}>{order.customerName || "—"}</span>
           </div>
           <div>
             Email:{" "}
-            <span style={{ color: "#262626" }}>
+            <span className={styles.infoValue}>
               {order.customerEmail || "—"}
             </span>
           </div>
           <div>
             Tổng tiền:{" "}
-            <span style={{ color: "#262626" }}>
+            <span className={styles.infoValue}>
               {(order.totalAmount || 0).toLocaleString("vi-VN")} đ
             </span>
           </div>
           {order.paidAt && (
             <div>
               Thanh toán lúc:{" "}
-              <span style={{ color: "#262626" }}>
+              <span className={styles.infoValue}>
                 {dayjs(order.paidAt).format("DD/MM/YYYY HH:mm")}
               </span>
             </div>
           )}
           <div>
             Sản phẩm:{" "}
-            <span style={{ color: "#262626" }}>
+            <span className={styles.infoValue}>
               {order.itemsSummary ||
                 (order.items?.length
                   ? order.items.map((i: any) => `${i.productName} × ${i.quantity}`).join(", ")
@@ -357,14 +432,8 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Khung Lịch sử trạng thái */}
-        <div
-          style={{
-            border: "1px solid #d9d9d9",
-            borderRadius: 10,
-            padding: "20px 24px",
-          }}
-        >
-          <Title level={5} style={{ margin: 0, marginBottom: 18, fontWeight: 700 }}>
+        <div className={styles.historyCard}>
+          <Title level={5} className={styles.historyTitle}>
             Lịch sử trạng thái
           </Title>
 
@@ -372,11 +441,11 @@ export default function OrderDetailPage() {
             items={timelineLogs.map((log: any) => ({
               color: "#1677ff",
               children: (
-                <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontWeight: 600, color: "#1f1f1f", fontSize: 14 }}>
+                <div className={styles.timelineItemWrap}>
+                  <div className={styles.timelineTitle}>
                     {log.fromStatus} → {log.toStatus}
                   </div>
-                  <div style={{ color: "#595959", fontSize: 13, marginTop: 2 }}>
+                  <div className={styles.timelineDate}>
                     {dayjs(log.createdAt).format("DD/MM/YYYY HH:mm")}
                   </div>
                 </div>
@@ -386,20 +455,12 @@ export default function OrderDetailPage() {
 
           {/* Trường hợp hệ thống tự huỷ */}
           {order.cancelReason && (
-            <div
-              style={{
-                marginTop: 12,
-                paddingTop: 12,
-                borderTop: "1px solid #f0f0f0",
-                fontSize: 13,
-                color: "#595959",
-              }}
-            >
-              <div style={{ marginBottom: 4 }}>Đơn bị hệ thống tự huỷ hiện thêm:</div>
-              <div style={{ fontWeight: 600, color: "#262626" }}>
+            <div className={styles.cancelReasonBox}>
+              <div className={styles.cancelHeader}>Đơn bị hệ thống tự huỷ hiện thêm:</div>
+              <div className={styles.cancelStatus}>
                 AWAITING_PAYMENT → CANCELLED
               </div>
-              <div style={{ marginTop: 2 }}>
+              <div className={styles.cancelReason}>
                 Người đổi: SYSTEM · Lý do: {order.cancelReason || "PAYMENT_TIMEOUT"}
               </div>
             </div>
@@ -408,8 +469,8 @@ export default function OrderDetailPage() {
       </div>
 
       {/* 3. Bảng danh sách sản phẩm (chỉ xem, giống B2) */}
-      <div style={{ border: "1px solid #d9d9d9", borderRadius: 10, padding: 16 }}>
-        <Title level={5} style={{ margin: "0 0 12px 0", fontWeight: 700 }}>
+      <div className={styles.productsSection}>
+        <Title level={5} className={styles.productsTitle}>
           Danh sách sản phẩm
         </Title>
         <Table

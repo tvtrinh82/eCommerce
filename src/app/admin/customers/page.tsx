@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Table, Button, Tag, Space, Popconfirm, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -9,6 +9,8 @@ import { useCustomers, useDeleteCustomer } from "@/features/customers/hooks";
 
 import { Customer } from "@/features/customers/types";
 import { CustomerModal } from "@/features/customers/components/CustomerModal";
+
+import styles from "./Customer.module.scss";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -30,6 +32,23 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<
     Customer | undefined
   >();
+  const [userRole, setUserRole] = useState<string>("");
+
+  useEffect(() => {
+    try {
+      const storedRole = localStorage.getItem("role");
+      if (storedRole) {
+        setUserRole(storedRole.toUpperCase());
+      } else {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          const r = parsed?.role || parsed?.roles?.[0]?.name || parsed?.roles?.[0] || "";
+          setUserRole(String(r).toUpperCase());
+        }
+      }
+    } catch {}
+  }, []);
 
   const isAdminUser = (c: Customer) => {
     const email = (c.email || "").toLowerCase().trim();
@@ -81,13 +100,13 @@ export default function CustomersPage() {
     });
   };
 
-  const columns = [
+  const baseColumns = [
     {
       title: "Họ tên",
       dataIndex: "name",
       key: "name",
       render: (value: string) => (
-        <span className="customer-name">{value || "—"}</span>
+        <span className={styles.customerName}>{value || "—"}</span>
       ),
     },
     {
@@ -95,21 +114,21 @@ export default function CustomersPage() {
       dataIndex: "email",
       key: "email",
       render: (value: string) => (
-        <span className="customer-email">{value || "—"}</span>
+        <span className={styles.customerEmail}>{value || "—"}</span>
       ),
     },
     {
       title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
-      width: 200,
-      render: (value: string) => <span>{value || "—"}</span>,
+      width: 180,
+      render: (value: string) => <span className={styles.customerPhone}>{value || "—"}</span>,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 170,
+      width: 150,
       render: (status: string) => {
         const isActive = status === "ACTIVE";
 
@@ -117,8 +136,8 @@ export default function CustomersPage() {
           <Tag
             className={
               isActive
-                ? "customer-status customer-status-active"
-                : "customer-status customer-status-inactive"
+                ? styles.statusActive
+                : styles.statusInactive
             }
           >
             {status || "UNKNOWN"}
@@ -126,61 +145,74 @@ export default function CustomersPage() {
         );
       },
     },
-    {
-      title: "Thao tác",
-      key: "action",
-      width: 140,
-      render: (_: unknown, record: Customer) => (
-        <Space
-          size={5}
-          separator={<span className="customer-action-separator">·</span>}
-        >
-          <Button
-            type="link"
-            className="customer-action-link"
-            onClick={() => showModal(record)}
-          >
-            Sửa
-          </Button>
-
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc chắn muốn xóa khách hàng này?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button type="link" className="customer-action-link" danger>
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
   ];
+
+  const columns = useMemo(() => {
+    // Chỉ ADMIN mới có quyền thêm/sửa/xóa khách hàng. PRODUCT_OWNER có quyền xem danh sách khách hàng.
+    if (userRole === "PRODUCT_OWNER") {
+      return baseColumns;
+    }
+
+    return [
+      ...baseColumns,
+      {
+        title: "Thao tác",
+        key: "action",
+        width: 170,
+        render: (_: unknown, record: Customer) => (
+          <Space
+            size={5}
+            separator={<span className={styles.actionSeparator}>·</span>}
+          >
+            <Button
+              type="link"
+              className={styles.btnEdit}
+              onClick={() => showModal(record)}
+            >
+              Sửa
+            </Button>
+
+            <Popconfirm
+              title="Xác nhận xóa"
+              description="Bạn có chắc chắn muốn xóa khách hàng này?"
+              onConfirm={() => handleDelete(record.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <Button type="link" className={styles.btnDelete} danger>
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Space>
+        ),
+      },
+    ];
+  }, [userRole]);
 
   return (
     <>
       {contextHolder}
 
-      <div className="customer-management">
+      <div className={styles.customerWrapper}>
         {/* Tiêu đề và nút thêm */}
-        <div className="customer-management-header">
-          <h2>Quản lý khách hàng</h2>
+        <div className={styles.headerRow}>
+          <h2 className={styles.pageTitle}>Quản lý khách hàng</h2>
 
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            className="customer-add-button"
-            onClick={() => showModal()}
-          >
-            Thêm khách hàng
-          </Button>
+          {userRole !== "PRODUCT_OWNER" && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className={styles.btnAddCustomer}
+              onClick={() => showModal()}
+            >
+              Thêm khách hàng
+            </Button>
+          )}
         </div>
 
         {/* Bảng khách hàng */}
         <Table<Customer>
-          className="customer-management-table"
+          className={styles.customerTable}
           columns={columns}
           dataSource={
             isError
@@ -205,7 +237,7 @@ export default function CustomersPage() {
               ? "Có lỗi xảy ra khi tải dữ liệu"
               : "Không có khách hàng nào",
           }}
-          scroll={{ x: 700 }}
+          scroll={{ x: 850 }}
         />
       </div>
 

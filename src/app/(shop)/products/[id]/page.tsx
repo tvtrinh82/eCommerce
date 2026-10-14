@@ -1,261 +1,409 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Typography, Row, Col, Button, message, Space, Divider, Radio, Tag, Breadcrumb, Skeleton, theme } from "antd";
-import { ShoppingCartOutlined, HeartOutlined, ThunderboltOutlined, HomeOutlined } from "@ant-design/icons";
 import { useParams, useRouter } from "next/navigation";
-import ClientLayout from "@/components/shared/ClientLayout";
-import Link from "next/link";
-import { useThemeStore } from "@/store/themeStore";
+import {
+  Row,
+  Col,
+  Rate,
+  Button,
+  Tag,
+  Divider,
+  Breadcrumb,
+  message,
+  Spin,
+  Alert,
+} from "antd";
+import {
+  ArrowLeftOutlined,
+  ShareAltOutlined,
+  HeartOutlined,
+  HeartFilled,
+  ShoppingCartOutlined,
+  SafetyCertificateOutlined,
+  SyncOutlined,
+  TruckOutlined,
+  CheckOutlined,
+} from "@ant-design/icons";
+import Header from "@/components/ecommerce/Header";
+import Footer from "@/components/ecommerce/Footer";
+import CartDrawer from "@/components/ecommerce/CartDrawer";
 import { useCartStore } from "@/store/cartStore";
-
-const { Title, Text, Paragraph } = Typography;
-
-const COLORS = ["Titan Tự nhiên", "Titan Đen", "Titan Trắng", "Titan Xanh"];
-const STORAGES = ["256GB", "512GB", "1TB"];
+import { apiClient } from "@/lib/api-client";
+import { formatCurrency } from "@/lib/format";
+import styles from "./ProductDetail.module.scss";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { addToCart, setCartVisible } = useCartStore();
+
+  const productId = Number(params?.id);
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [messageApi, contextHolder] = message.useMessage();
-  
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-  const [selectedStorage, setSelectedStorage] = useState(STORAGES[0]);
-  const { isDarkMode } = useThemeStore();
-  const { addToCart, setCartVisible } = useCartStore();
-  const { token } = theme.useToken();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [activeImage, setActiveImage] = useState<string>("");
+  const [selectedStorage, setSelectedStorage] = useState<string>("256GB");
+  const [selectedColor, setSelectedColor] = useState<string>("#2C3E50");
+  const [quantity, setQuantity] = useState<number>(1);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+
+  // Fetch dữ liệu thật từ Backend API
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!productId) return;
       try {
-        // Workaround: GET /api/products/{id} is failing (500) due to Redis @Cacheable error on backend.
-        // Since we cannot modify the backend, we fetch the product list and find the product by ID.
-        const res = await fetch(`/api/products?page=0&size=100`);
-        if (res.ok) {
-          const json = await res.json();
-          const list = json.data?.content || json.data || [];
-          const found = list.find((p: any) => p.id === parseInt(params.id as string));
-          if (found) {
-            setProduct(found);
+        setLoading(true);
+        setErrorMsg(null);
+        // Fallback an toàn: Thử lấy danh sách nếu /products/{id} có lỗi cache Redis BE
+        const res: any = await apiClient.get("/products?page=0&size=100");
+        const list = res.data?.content || res.data || [];
+        const found = list.find((p: any) => p.id === productId);
+
+        if (found) {
+          setProduct(found);
+          setActiveImage(found.imageUrl || "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80");
+        } else {
+          // Thử gọi trực tiếp /products/{id}
+          const detailRes: any = await apiClient.get(`/products/${productId}`);
+          const p = detailRes.data?.data || detailRes.data;
+          if (p) {
+            setProduct(p);
+            setActiveImage(p.imageUrl || "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80");
           } else {
-            console.warn("Product not found in list");
+            setErrorMsg("Không tìm thấy sản phẩm");
           }
         }
-      } catch (error) {
-        console.error("Failed to fetch product:", error);
+      } catch (err: any) {
+        console.error("Lỗi khi tải chi tiết sản phẩm:", err);
+        setErrorMsg("Không thể tải thông tin sản phẩm từ máy chủ");
       } finally {
         setLoading(false);
       }
     };
-    if (params.id) {
-      fetchProduct();
-    }
-  }, [params.id]);
+
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className={styles.pageRoot}>
+        <Header />
+        <div style={{ padding: "120px 0", textAlign: "center" }}>
+          <Spin size="large" tip="Đang tải chi tiết sản phẩm..." />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (errorMsg || !product) {
+    return (
+      <div className={styles.pageRoot}>
+        <Header />
+        <div style={{ maxWidth: 600, margin: "80px auto", padding: "0 20px" }}>
+          <Alert
+            message="Thông báo"
+            description={errorMsg || "Sản phẩm không tồn tại hoặc đã ngừng kinh doanh."}
+            type="warning"
+            showIcon
+            action={
+              <Button type="primary" onClick={() => router.push("/")}>
+                Về trang chủ
+              </Button>
+            }
+          />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const galleryImages = [
+    activeImage,
+    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+  ];
+
+  const storageOptions = [
+    { label: "128GB", priceAdd: 0 },
+    { label: "256GB", priceAdd: 0 },
+    { label: "512GB", priceAdd: 2000000 },
+    { label: "1TB", priceAdd: 5000000 },
+  ];
+
+  const currentPrice = Number(product.price || 0) + (storageOptions.find((s) => s.label === selectedStorage)?.priceAdd || 0);
 
   const handleAddToCart = () => {
-    if (!product) return;
-    const attributes = [];
-    if (hasColor) attributes.push(selectedColor);
-    if (hasStorage) attributes.push(selectedStorage);
-    const attrString = attributes.length > 0 ? ` (${attributes.join(', ')})` : '';
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      message.warning("Vui lòng đăng nhập để sử dụng giỏ hàng!");
+      router.push("/auth/login");
+      return;
+    }
 
     addToCart({
       productId: product.id,
-      name: `${product.name}${attrString}`,
-      price: product.price * priceMultiplier,
-      quantity: 1,
-      image: product.imageUrl || "https://placehold.co/200x200?text=No+Image"
+      name: `${product.name} (${selectedStorage})`,
+      price: currentPrice,
+      quantity,
+      image: activeImage,
+      specs: `${selectedStorage} • Bảo hành chính hãng`,
     });
-    setCartVisible(true);
-    messageApi.success(`Đã thêm ${product?.name} vào giỏ hàng`);
+    message.success(`Đã thêm ${product.name} vào giỏ hàng!`);
   };
 
   const handleBuyNow = () => {
-    if (!product) return;
-    const attributes = [];
-    if (hasColor) attributes.push(selectedColor);
-    if (hasStorage) attributes.push(selectedStorage);
-    const attrString = attributes.length > 0 ? ` (${attributes.join(', ')})` : '';
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      message.warning("Vui lòng đăng nhập để tiếp tục mua hàng!");
+      router.push("/auth/login");
+      return;
+    }
 
-    addToCart({
-      productId: product.id,
-      name: `${product.name}${attrString}`,
-      price: product.price * priceMultiplier,
-      quantity: 1,
-      image: product.imageUrl || "https://placehold.co/1000x1000?text=No+Image"
-    });
+    handleAddToCart();
     setCartVisible(false);
     router.push("/orders/new");
   };
 
-  if (loading) {
-    return (
-      <ClientLayout>
-        <div style={{ padding: "40px 10%", maxWidth: 1200, margin: "0 auto", backgroundColor: isDarkMode ? '#0f0f11' : '#f5f5f7' }}>
-          <Skeleton active paragraph={{ rows: 10 }} />
-        </div>
-      </ClientLayout>
-    );
-  }
-
-  if (!product) {
-    return (
-      <ClientLayout>
-        <div style={{ padding: "100px 10%", textAlign: "center", backgroundColor: token.colorBgBase }}>
-          <Title level={3} style={{ color: token.colorText }}>Không tìm thấy sản phẩm</Title>
-          <Button type="primary" onClick={() => router.push("/")} style={{ marginTop: 20 }}>Về trang chủ</Button>
-        </div>
-      </ClientLayout>
-    );
-  }
-
-  const productNameLower = product.name?.toLowerCase() || '';
-  // Kiểm tra phụ kiện (ốp lưng, bao da, dán màn hình, cáp sạc, tai nghe,...) -> không hiển thị màu/dung lượng
-  const isAccessory = 
-    productNameLower.includes('ốp') || 
-    productNameLower.includes('op') || 
-    productNameLower.includes('bao da') || 
-    productNameLower.includes('case') || 
-    productNameLower.includes('cường lực') || 
-    productNameLower.includes('kính') || 
-    productNameLower.includes('dán') || 
-    productNameLower.includes('sạc') || 
-    productNameLower.includes('cáp') || 
-    productNameLower.includes('dây');
-
-  // Chỉ hiển thị màu sắc và dung lượng với Điện thoại thật (không phải ốp lưng hay phụ kiện)
-  const isPhone = 
-    !isAccessory && 
-    (productNameLower.includes('iphone') || productNameLower.includes('điện thoại') || productNameLower.includes('phone'));
-    
-  const hasColor = isPhone;
-  const hasStorage = isPhone;
-
-  // Adjust price based on storage just for UI effect
-  const priceMultiplier = hasStorage ? (STORAGES.indexOf(selectedStorage) * 0.2 + 1) : 1;
-  const currentPrice = product.price * priceMultiplier;
-
   return (
-    <ClientLayout>
-      {contextHolder}
-      <div style={{ padding: "40px 10%", maxWidth: 1400, margin: "0 auto" }}>
-        
-        <Breadcrumb style={{ marginBottom: 32, fontSize: 15 }} items={[
-          { title: <Link href="/" style={{ color: isDarkMode ? '#a1a1aa' : '#52525b' }}><HomeOutlined /> Trang chủ</Link> },
-          { title: <Link href="/" style={{ color: isDarkMode ? '#a1a1aa' : '#52525b' }}>Sản phẩm</Link> },
-          { title: <span style={{ color: isDarkMode ? '#ffffff' : '#18181b', fontWeight: 600 }}>{product.name}</span> }
-        ]} />
+    <div className={styles.pageRoot}>
+      <Header />
+      <CartDrawer />
 
-        <Row gutter={[64, 48]}>
-          {/* Image Section */}
-          <Col xs={24} md={12}>
-            <div style={{ 
-              backgroundColor: isDarkMode ? "#1f1f23" : "#f4f4f5", 
-              borderRadius: 30, 
-              padding: 40,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              border: isDarkMode ? '1px solid #27272a' : '1px solid #e4e4e7',
-              boxShadow: isDarkMode ? 'inset 0 0 40px rgba(0,0,0,0.5)' : 'none'
-            }}>
-              <img 
-                src={product.imageUrl || "https://placehold.co/1000x1000?text=No+Image"} 
-                alt={product.name} 
-                style={{ width: "100%", maxWidth: 400, maxHeight: 400, objectFit: "contain" }} 
-              />
-            </div>
-          </Col>
-
-          {/* Details Section */}
-          <Col xs={24} md={12}>
-            <Title level={1} style={{ marginTop: 0, marginBottom: 16, fontSize: 36, fontWeight: 700, letterSpacing: -0.5, color: isDarkMode ? '#ffffff' : '#18181b', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased' }}>{product.name}</Title>
-            <Space style={{ marginBottom: 28, alignItems: 'baseline', gap: 16 }}>
-              <Text strong style={{ color: isDarkMode ? '#ffffff' : '#18181b', fontSize: 32, whiteSpace: 'nowrap' }}>{currentPrice.toLocaleString("vi-VN")} đ</Text>
-              {product.oldPrice && <Text delete style={{ fontSize: 18, color: isDarkMode ? '#71717a' : '#a1a1aa', whiteSpace: 'nowrap' }}>{(product.oldPrice * priceMultiplier).toLocaleString("vi-VN")} đ</Text>}
-            </Space>
-
-            <Divider style={{ borderColor: isDarkMode ? '#27272a' : '#e4e4e7' }} />
-
-            {hasColor && (
-              <div style={{ marginBottom: 28 }}>
-                <Text strong style={{ fontSize: 16, display: "block", marginBottom: 14, color: isDarkMode ? '#f4f4f5' : '#18181b' }}>Chọn Màu sắc:</Text>
-                <Radio.Group 
-                  value={selectedColor} 
-                  onChange={e => setSelectedColor(e.target.value)}
-                  optionType="button"
-                  buttonStyle="solid"
-                  size="large"
-                >
-                  {COLORS.map(color => (
-                    <Radio.Button key={color} value={color} style={{ borderRadius: 8, margin: '0 8px 8px 0', border: isDarkMode ? '1px solid #3f3f46' : '1px solid #d4d4d8' }}>{color}</Radio.Button>
-                  ))}
-                </Radio.Group>
-              </div>
-            )}
-
-            {hasStorage && (
-              <div style={{ marginBottom: 32 }}>
-                {/* <Text strong style={{ fontSize: 16, display: "block", marginBottom: 14, color: isDarkMode ? '#f4f4f5' : '#18181b' }}>Chọn Dung lượng (GB):</Text> */}
-                <Radio.Group 
-                  value={selectedStorage} 
-                  onChange={e => setSelectedStorage(e.target.value)}
-                  optionType="button"
-                  buttonStyle="solid"
-                  size="large"
-                >
-                  {STORAGES.map(gb => (
-                    <Radio.Button key={gb} value={gb} style={{ borderRadius: 8, margin: '0 8px 8px 0', border: isDarkMode ? '1px solid #3f3f46' : '1px solid #d4d4d8' }}>{gb}</Radio.Button>
-                  ))}
-                </Radio.Group>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-              <Button
-                type="primary"
-                size="large"
-                shape="round"
-                disabled={product.stock === 0}
-                onClick={handleBuyNow}
-                style={{ height: 56, fontSize: 17, fontWeight: 600, backgroundColor: product.stock > 0 ? (isDarkMode ? '#ffffff' : '#18181b') : undefined, color: isDarkMode ? '#18181b' : '#ffffff', border: 'none' }}
-                block
+      <main className={styles.main}>
+        <div className={styles.container}>
+          {/* Mobile Top Navigation */}
+          <div className={styles.mobileTopBar}>
+            <button className={styles.navIconBtn} onClick={() => router.back()}>
+              <ArrowLeftOutlined />
+            </button>
+            <span className={styles.topBarTitle}>{product.name}</span>
+            <div className={styles.topBarActions}>
+              <button
+                className={styles.navIconBtn}
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: product.name, url: window.location.href });
+                  } else {
+                    message.info("Đã sao chép liên kết sản phẩm!");
+                  }
+                }}
               >
-                {product.stock > 0 ? "Mua ngay" : "Hết hàng"}
-              </Button>
-              
-              <Button 
-                size="large"
-                shape="round" 
-                icon={<ShoppingCartOutlined />} 
-                disabled={product.stock === 0}
-                onClick={handleAddToCart}
-                style={{ height: 56, fontSize: 17, fontWeight: 600, backgroundColor: isDarkMode ? '#27272a' : '#e4e4e7', color: isDarkMode ? '#f4f4f5' : '#18181b', border: isDarkMode ? '1px solid #3f3f46' : '1px solid #d4d4d8' }}
-                block
+                <ShareAltOutlined />
+              </button>
+              <button
+                className={`${styles.navIconBtn} ${isWishlisted ? styles.activeWishlist : ""}`}
+                onClick={() => setIsWishlisted(!isWishlisted)}
               >
-                Thêm vào giỏ hàng
-              </Button>
+                {isWishlisted ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
+              </button>
             </div>
+          </div>
 
-            <Divider style={{ borderColor: isDarkMode ? '#27272a' : '#e4e4e7' }} />
+          {/* Desktop Breadcrumbs */}
+          <div className={styles.desktopBreadcrumb}>
+            <Breadcrumb
+              items={[
+                { title: "Trang chủ", href: "/" },
+                { title: "Sản phẩm", href: "/#popular" },
+                { title: product.name },
+              ]}
+            />
+          </div>
 
-            <div style={{ marginTop: 28 }}>
-              <Title level={4} style={{ color: isDarkMode ? '#ffffff' : '#18181b' }}>Đặc điểm nổi bật</Title>
-              <Paragraph style={{ fontSize: 15, color: isDarkMode ? '#d4d4d8' : '#3f3f46', lineHeight: 1.8 }}>
-                {product.description || `Sản phẩm ${product.name} chính hãng. Thiết kế hiện đại, cấu hình mạnh mẽ, đáp ứng mọi nhu cầu sử dụng của bạn. Bảo hành 12 tháng tại các trung tâm ủy quyền.`}
-              </Paragraph>
-              <ul style={{ paddingLeft: 20, fontSize: 14, color: isDarkMode ? '#d4d4d8' : '#3f3f46', lineHeight: 2 }}>
-                <li>Màn hình Super Retina XDR sáng hơn và sắc nét hơn.</li>
-                <li>Chip A-series thế hệ mới cho hiệu năng vượt trội.</li>
-                <li>Hệ thống camera Pro chụp ảnh và quay video tuyệt đỉnh.</li>
-                <li>Thời lượng pin cả ngày, hỗ trợ sạc nhanh.</li>
-              </ul>
-            </div>
-          </Col>
-        </Row>
+          <Row gutter={[48, 48]} className={styles.contentRow}>
+            {/* Gallery ảnh sản phẩm */}
+            <Col xs={24} md={12}>
+              <div className={styles.galleryWrapper}>
+                <div className={styles.mainImageCard}>
+                  {product.stock > 0 ? (
+                    <span className={styles.tagBadge}>Còn hàng</span>
+                  ) : (
+                    <span style={{ background: "#fff1f0", color: "#f5222d" }} className={styles.tagBadge}>
+                      Tạm hết hàng
+                    </span>
+                  )}
+                  <img src={activeImage} alt={product.name} className={styles.mainImage} />
+                </div>
+
+                <div className={styles.thumbnailsRow}>
+                  {galleryImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      className={`${styles.thumbBtn} ${activeImage === img ? styles.thumbActive : ""}`}
+                      onClick={() => setActiveImage(img)}
+                    >
+                      <img src={img} alt={`Thumbnail ${idx}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Col>
+
+            {/* Thông tin chi tiết */}
+            <Col xs={24} md={12}>
+              <div className={styles.detailsWrap}>
+                <span className={styles.brandSubtitle}>Chính Hãng Phân Phối</span>
+                <h1 className={styles.productTitle}>{product.name}</h1>
+
+                <div className={styles.ratingRow}>
+                  <Rate disabled defaultValue={5} allowHalf className={styles.stars} />
+                  <span className={styles.ratingText}>
+                    5.0 (Đánh giá hàng đầu từ người dùng)
+                  </span>
+                </div>
+
+                <div className={styles.priceRow}>
+                  <span className={styles.price}>
+                    {currentPrice.toLocaleString("vi-VN")} đ
+                  </span>
+                  <span className={styles.oldPrice}>
+                    {(currentPrice * 1.1).toLocaleString("vi-VN")} đ
+                  </span>
+                  <span className={styles.stockStatus}>
+                    {/* <CheckOutlined style={{ color: "#52c41a" }} /> Kho còn: {product.stock ?? 0} sản phẩm */}
+                  </span>
+                </div>
+
+                <Divider style={{ margin: "20px 0" }} />
+
+                {/* Specs Pills */}
+                <div className={styles.specsPills}>
+                  <div className={styles.specPill}>
+                    <span className={styles.pillLabel}>Màn hình</span>
+                    <strong className={styles.pillVal}>Super AMOLED 120Hz</strong>
+                  </div>
+                  <div className={styles.specPill}>
+                    <span className={styles.pillLabel}>Hiệu năng</span>
+                    <strong className={styles.pillVal}>Chipset Flagship 5G</strong>
+                  </div>
+                  <div className={styles.specPill}>
+                    <span className={styles.pillLabel}>Camera</span>
+                    <strong className={styles.pillVal}>Chụp đêm AI Ultra</strong>
+                  </div>
+                  <div className={styles.specPill}>
+                    <span className={styles.pillLabel}>Pin & Sạc</span>
+                    <strong className={styles.pillVal}>Sạc siêu nhanh</strong>
+                  </div>
+                </div>
+
+                {/* Chọn màu sắc */}
+                <div className={styles.optionSection}>
+                  <label className={styles.optionLabel}>
+                    Phiên bản màu: <span>Titanium Premium</span>
+                  </label>
+                  <div className={styles.colorDotsRow}>
+                    {["#2C3E50", "#C5A880", "#E0E0E0", "#1C1C1E"].map((colorHex) => (
+                      <button
+                        key={colorHex}
+                        className={`${styles.colorDot} ${
+                          selectedColor === colorHex ? styles.colorDotActive : ""
+                        }`}
+                        style={{ backgroundColor: colorHex }}
+                        onClick={() => setSelectedColor(colorHex)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chọn dung lượng */}
+                <div className={styles.optionSection}>
+                  <label className={styles.optionLabel}>
+                    Dung lượng bộ nhớ: <span>{selectedStorage}</span>
+                  </label>
+                  <div className={styles.storageGrid}>
+                    {storageOptions.map((opt) => (
+                      <button
+                        key={opt.label}
+                        className={`${styles.storageBtn} ${
+                          selectedStorage === opt.label ? styles.storageActive : ""
+                        }`}
+                        onClick={() => setSelectedStorage(opt.label)}
+                      >
+                        <span className={styles.storageVal}>{opt.label}</span>
+                        {opt.priceAdd > 0 && (
+                          <span className={styles.storageAdd}>+{opt.priceAdd.toLocaleString("vi-VN")} đ</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quantity & CTA Buttons (Desktop) */}
+                <div className={styles.ctaDesktopRow}>
+                  <div className={styles.qtyStepper}>
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+                    <span>{quantity}</span>
+                    <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                  </div>
+
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<ShoppingCartOutlined />}
+                    className={styles.addCartBtn}
+                    disabled={!product.stock || product.stock === 0}
+                    onClick={handleAddToCart}
+                  >
+                    Thêm vào giỏ
+                  </Button>
+
+                  <Button
+                    size="large"
+                    className={styles.buyNowBtn}
+                    disabled={!product.stock || product.stock === 0}
+                    onClick={handleBuyNow}
+                  >
+                    Mua ngay
+                  </Button>
+                </div>
+
+                {/* Cam kết dịch vụ */}
+                <div className={styles.assuranceList}>
+                  <div className={styles.assuranceItem}>
+                    <TruckOutlined className={styles.asIcon} />
+                    <span>Miễn phí giao hàng hỏa tốc toàn quốc</span>
+                  </div>
+                  <div className={styles.assuranceItem}>
+                    <SafetyCertificateOutlined className={styles.asIcon} />
+                    <span>Bảo hành chính hãng 12-24 tháng & Đổi trả trong 30 ngày</span>
+                  </div>
+                  <div className={styles.assuranceItem}>
+                    <SyncOutlined className={styles.asIcon} />
+                    <span>Cam kết 100% hàng thật, hoàn tiền gấp đôi nếu phát hiện giả</span>
+                  </div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </div>
+      </main>
+
+      {/* Sticky Bottom Bar for Mobile Viewports */}
+      <div className={styles.mobileStickyBottom}>
+        <div className={styles.stickyPriceWrap}>
+          <span className={styles.stickyPrice}>
+            {currentPrice.toLocaleString("vi-VN")} đ
+          </span>
+          <span className={styles.stickySpec}>{selectedStorage} • Giao miễn phí</span>
+        </div>
+        <div className={styles.stickyActions}>
+          <Button
+            type="primary"
+            size="large"
+            icon={<ShoppingCartOutlined />}
+            className={styles.stickyAddBtn}
+            disabled={!product.stock || product.stock === 0}
+            onClick={handleAddToCart}
+          >
+            Thêm giỏ
+          </Button>
+        </div>
       </div>
-    </ClientLayout>
+
+      <Footer />
+    </div>
   );
 }

@@ -11,8 +11,11 @@ interface GetProductsParams {
 
 export const productApi = {
   getProducts: async (params: GetProductsParams) => {
-    
     return apiClient.get('/products', { params });
+  },
+
+  getMyProducts: async (params: GetProductsParams) => {
+    return apiClient.get('/products/mine', { params });
   },
   
   createProduct: async (data: ProductPayload) => {

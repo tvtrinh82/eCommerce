@@ -2,286 +2,342 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Row, Col, Typography, Statistic, Table, Tag, Alert, Spin } from "antd";
+import { Spin, Alert } from "antd";
 import {
-  ShoppingCart,
+  DollarSign,
   Package,
-  TrendingUp,
-  AlertCircle,
-  DollarSign
+  ShoppingCart,
+  Clock,
+  MoreVertical,
 } from "lucide-react";
-
-const { Title, Text } = Typography;
-
-interface DashboardData {
-  date: string;
-  revenueToday: number;
-  orderCountByStatus: Record<string, number>;
-  top5Products: Array<{ productId: number; name: string; quantitySold: number; }>;
-  lowStockProducts: Array<{ productId: number; name: string; stock: number; }>;
-  partial: boolean;
-  failedParts: string[];
-}
+import { dashboardApi } from "@/features/dashboard/api";
+import styles from "./Dashboard.module.scss";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"Daily" | "Weekly" | "Monthly">("Monthly");
+
+  const [stats, setStats] = useState({
+    revenueToday: 0,
+    totalProducts: 0,
+    totalStock: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+  });
+
+  const [salesBars, setSalesBars] = useState<Array<{ label: string; count: number; revenue: number }>>([]);
+  const [distribution, setDistribution] = useState({
+    completedRate: 64,
+    pendingRate: 24,
+    cancelledRate: 12,
+    totalOrders: 0,
+  });
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
+
+  const loadDashboardData = async () => {
+    try {
+      setError(null);
+      const [summaryData, chartData, distData, transData, custData] = await Promise.all([
+        dashboardApi.getSummaryStats(),
+        dashboardApi.getOverallSalesChart(activeTab),
+        dashboardApi.getOrderDistribution(),
+        dashboardApi.getLatestTransactions(4),
+        dashboardApi.getRecentCustomers(4),
+      ]);
+
+      setStats(summaryData);
+      setSalesBars(chartData);
+      setDistribution(distData);
+      setTransactions(transData);
+      setCustomers(custData);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Không thể tải dữ liệu bảng điều khiển.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { "Authorization": token ? `Bearer ${token}` : "" };
+    loadDashboardData();
+  }, [activeTab]);
 
-        // Fetch orders and products in parallel
-        const [ordersRes, productsRes] = await Promise.all([
-          fetch("/api/orders?page=0&size=1000", { headers }),
-          fetch("/api/products?page=0&size=1000", { headers })
-        ]);
+  const maxRevenue = Math.max(...salesBars.map((b) => b.revenue), 1);
+  const maxCount = Math.max(...salesBars.map((b) => b.count), 1);
 
-        if (!ordersRes.ok || !productsRes.ok) {
-          if (ordersRes.status === 401 || productsRes.status === 401) {
-            window.location.href = "/auth/login";
-            return;
-          }
-          throw new Error("Failed to fetch data for dashboard");
-        }
+  if (loading) {
+    return (
+      <div className={styles.loadingCenter}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-        const ordersJson = await ordersRes.json();
-        const productsJson = await productsRes.json();
-
-        const orders = ordersJson.data?.content || ordersJson.data || [];
-        const products = productsJson.data?.content || productsJson.data || [];
-
-        let revenueToday = 0;
-        const orderCountByStatus: Record<string, number> = {};
-
-        // Product ID -> Quantity Sold
-        const productSales: Record<number, number> = {};
-
-        // Compute from orders
-        orders.forEach((order: any) => {
-          // Count status
-          orderCountByStatus[order.status] = (orderCountByStatus[order.status] || 0) + 1;
-
-          // Revenue (only from paid/completed orders usually, but we sum totalAmount for demo)
-          revenueToday += order.totalAmount || 0;
-
-          // Sales volume
-          order.items?.forEach((item: any) => {
-            productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
-          });
-        });
-
-        // Top 5 products
-        const top5Products = Object.keys(productSales)
-          .map(id => {
-            const prod = products.find((p: any) => p.id === parseInt(id));
-            return {
-              productId: parseInt(id),
-              name: prod ? prod.name : `Product #${id}`,
-              quantitySold: productSales[parseInt(id)]
-            };
-          })
-          .sort((a, b) => b.quantitySold - a.quantitySold)
-          .slice(0, 5);
-
-        // Low stock products (stock <= 10)
-        const lowStockProducts = products
-          .filter((p: any) => p.stock <= 10)
-          .map((p: any) => ({
-            productId: p.id,
-            name: p.name,
-            stock: p.stock
-          }));
-
-        setData({
-          date: new Date().toISOString(),
-          revenueToday,
-          orderCountByStatus,
-          top5Products,
-          lowStockProducts,
-          partial: false,
-          failedParts: []
-        });
-
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, []);
-
-  const columns = [
-    {
-      title: "Tên sản phẩm",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string) => <strong>{text}</strong>,
-    },
-    {
-      title: "Đã bán",
-      dataIndex: "quantitySold",
-      key: "quantitySold",
-    },
-    {
-      title: "Trạng thái",
-      key: "status",
-      render: () => <Tag color="success">Còn hàng</Tag>,
-    },
-  ];
-
-  const totalOrders = data ? Object.values(data.orderCountByStatus).reduce((a, b) => a + b, 0) : 0;
-  const pendingOrders = data?.orderCountByStatus["PENDING"] || 0;
+  const donutGradient = `conic-gradient(#2563eb 0% ${distribution.completedRate}%, #38bdf8 ${distribution.completedRate}% ${distribution.completedRate + distribution.pendingRate}%, #ef4444 ${distribution.completedRate + distribution.pendingRate}% 100%)`;
 
   return (
-    <>
-      {error && <Alert title={"Lỗi tải dữ liệu"} description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
-      {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: 50 }}>
-          <Spin size="large" />
+    <div className={styles.container}>
+      {/* HEADER ĐIỀU HƯỚNG */}
+      <div className={styles.headerBar}>
+        <div>
+          <h2 className={styles.headerTitle}>Tổng quan bán hàng</h2>
+          <span className={styles.headerSubtitle}>Thống kê dữ liệu thực tế từ cơ sở dữ liệu</span>
         </div>
-      ) : data ? (
-        <>
-          {data.partial && (
-            <Alert title={`Some data failed to load: ${data.failedParts.join(', ')}`} type="warning" showIcon style={{ marginBottom: 24 }} />
-          )}
-          {/* Top Statistics */}
-          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-            <Col xs={24} sm={12} lg={6}>
-              <Card 
-                variant="borderless" 
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%" }}
-              >
-                <Statistic
-                  title={<Text type="secondary" style={{ fontSize: 13 }}>{"Doanh thu hôm nay"}</Text>}
-                  value={data.revenueToday}
-                  prefix={<DollarSign size={18} color="#1890ff" />}
-                  suffix="₫"
-                  styles={{ content: { color: "#1f1f1f", fontWeight: 600, fontSize: 20 } }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card 
-                variant="borderless" 
-                hoverable
-                onClick={() => router.push("/admin/orders")}
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%", cursor: "pointer" }}
-              >
-                <Statistic
-                  title={<Text type="secondary" style={{ fontSize: 13 }}>{"Tổng số đơn hàng"}</Text>}
-                  value={totalOrders}
-                  prefix={<ShoppingCart size={18} color="#52c41a" />}
-                  styles={{ content: { color: "#1f1f1f", fontWeight: 600, fontSize: 20 } }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card 
-                variant="borderless" 
-                hoverable
-                onClick={() => router.push("/admin/orders")}
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%", cursor: "pointer" }}
-              >
-                <Statistic
-                  title={<Text type="secondary" style={{ fontSize: 13 }}>{"Đơn chờ xử lý"}</Text>}
-                  value={pendingOrders}
-                  prefix={<AlertCircle size={18} color="#faad14" />}
-                  styles={{ content: { color: "#1f1f1f", fontWeight: 600, fontSize: 20 } }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card 
-                variant="borderless" 
-                hoverable
-                onClick={() => router.push("/admin/products")}
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%", cursor: "pointer" }}
-              >
-                <Statistic
-                  title={<Text type="secondary" style={{ fontSize: 13 }}>{"Sắp hết hàng"}</Text>}
-                  value={data.lowStockProducts.length}
-                  prefix={<Package size={18} color="#ff4d4f" />}
-                  styles={{ content: { color: "#1f1f1f", fontWeight: 600, fontSize: 20 } }}
-                />
-              </Card>
-            </Col>
-          </Row>
 
-          {/* Top Products Table & Low Stock Alert */}
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={16}>
-              <Card
-                title={<Title level={5} style={{ margin: 0 }}>{"Top 5 sản phẩm bán chạy"}</Title>}
-                variant="borderless"
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%" }}
-              >
-                <Table
-                  dataSource={data.top5Products.map(p => ({ ...p, key: p.productId }))}
-                  columns={columns}
-                  pagination={false}
-                  rowClassName={() => 'table-row-hover'}
-                  onRow={(record) => ({
-                    onClick: () => router.push(`/admin/products?name=${encodeURIComponent(record.name)}`),
-                    style: { cursor: "pointer" },
-                  })}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} lg={8}>
-              <Card
-                title={
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Title level={5} style={{ margin: 0 }}>{"Cảnh báo sắp hết hàng"}</Title>
-                    <span 
-                      style={{ fontSize: 12, color: "#1677ff", cursor: "pointer", fontWeight: 500 }}
-                      onClick={() => router.push("/admin/products")}
-                    >
-                      Xem tất cả →
-                    </span>
+        <div>
+          <button
+            type="button"
+            onClick={() => router.push("/admin/orders")}
+            className={styles.btnPrimaryAction}
+          >
+            Quản lý đơn hàng
+          </button>
+        </div>
+      </div>
+
+      {error && <Alert message="Lỗi tải dữ liệu" description={error} type="error" showIcon />}
+
+      {/* 1. HÀNG 4 THẺ THỐNG KÊ (ĐÃ GẮN SỰ KIỆN CLICK ĐIỀU HƯỚNG) */}
+      <div className={styles.statsGrid}>
+        {/* Thẻ 1: Doanh thu hôm nay */}
+        <div className={styles.cardHero}>
+          <div className={styles.cardHeroIcon}>
+            <DollarSign size={24} color="#ffffff" />
+          </div>
+          <div>
+            <div className={styles.cardHeroValue}>
+              {stats.revenueToday.toLocaleString("vi-VN")} đ
+            </div>
+            <div className={styles.cardHeroLabel}>Doanh thu hôm nay</div>
+          </div>
+        </div>
+
+        {/* Thẻ 2: Tồn kho -> Chuyển đến trang Sản phẩm */}
+        <div
+          className={styles.statCard}
+          onClick={() => router.push("/admin/products")}
+          role="button"
+          tabIndex={0}
+        >
+          <div className={styles.iconPurple}>
+            <Package size={22} />
+          </div>
+          <div>
+            <div className={styles.statValue}>
+              {stats.totalStock.toLocaleString("vi-VN")}
+            </div>
+            <div className={styles.statLabel}>Tồn kho ({stats.totalProducts} SP)</div>
+          </div>
+        </div>
+
+        {/* Thẻ 3: Tổng đơn hàng -> Chuyển đến trang Đơn hàng */}
+        <div
+          className={styles.statCard}
+          onClick={() => router.push("/admin/orders")}
+          role="button"
+          tabIndex={0}
+        >
+          <div className={styles.iconAmber}>
+            <ShoppingCart size={22} />
+          </div>
+          <div>
+            <div className={styles.statValue}>
+              {stats.totalOrders.toLocaleString("vi-VN")}
+            </div>
+            <div className={styles.statLabel}>Tổng đơn hàng</div>
+          </div>
+        </div>
+
+        {/* Thẻ 4: Đơn chờ xử lý -> Chuyển đến tab PENDING của trang Đơn hàng */}
+        <div
+          className={styles.statCard}
+          onClick={() => router.push("/admin/orders?status=PENDING")}
+          role="button"
+          tabIndex={0}
+        >
+          <div className={styles.iconBlue}>
+            <Clock size={22} />
+          </div>
+          <div>
+            <div className={styles.statValue}>{stats.pendingOrders}</div>
+            <div className={styles.statLabel}>Đơn chờ xử lý</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. CỤM BIỂU ĐỒ DOANH SỐ VÀ PHÂN BỔ */}
+      <div className={styles.twoColsGrid}>
+        <div className={styles.sectionCard}>
+          <div className={styles.cardHeader}>
+            <div>
+              <div className={styles.sectionTitle}>Biểu đồ bán hàng</div>
+              <div className={styles.bigCounter}>
+                <span className={styles.counterLabel}>Tổng đơn:</span>
+                {stats.totalOrders}
+              </div>
+            </div>
+
+            <div className={styles.filterWrapper}>
+              <div className={styles.filterPill}>
+                {(["Daily", "Weekly", "Monthly"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`${styles.pillBtn} ${activeTab === tab ? styles.pillActive : ""}`}
+                  >
+                    {tab === "Daily" ? "Ngày" : tab === "Weekly" ? "Tuần" : "Tháng"}
+                  </button>
+                ))}
+              </div>
+              <MoreVertical size={16} />
+            </div>
+          </div>
+
+          <div className={styles.legendRow}>
+            <div className={styles.legendItem}>
+              <span className={styles.dotBlue}></span>
+              <span>Doanh thu</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span className={styles.dotSky}></span>
+              <span>Số lượng đơn</span>
+            </div>
+          </div>
+
+          <div className={styles.chartBarsWrapper}>
+            {salesBars.map((item) => {
+              const revPercent = Math.max(Math.round((item.revenue / maxRevenue) * 100), 6);
+              const countPercent = Math.max(Math.round((item.count / maxCount) * 100), 6);
+
+              return (
+                <div key={item.label} className={styles.barCol}>
+                  <div
+                    className={styles.barGroup}
+                    style={{ "--bar-rev": `${revPercent}%`, "--bar-count": `${countPercent}%` } as React.CSSProperties}
+                    title={`Doanh thu: ${item.revenue.toLocaleString("vi-VN")} đ\nSố đơn: ${item.count}`}
+                  >
+                    <div className={styles.barReach}></div>
+                    <div className={styles.barEngage}></div>
                   </div>
-                }
-                variant="borderless"
-                style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.03)", height: "100%" }}
-              >
-                {data.lowStockProducts.length > 0 ? (
-                  data.lowStockProducts.map(p => (
-                    <div 
-                      key={p.productId} 
-                      onClick={() => router.push(`/admin/products?name=${encodeURIComponent(p.name)}`)}
-                      style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        alignItems: "center",
-                        marginBottom: 10, 
-                        padding: "8px 10px", 
-                        borderRadius: 6,
-                        borderBottom: "1px solid #f0f0f0",
-                        cursor: "pointer",
-                        transition: "background 0.2s"
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <Text strong style={{ color: "#1890ff", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.name}
-                      </Text>
-                      <Tag color="error">{p.stock} {"còn lại"}</Tag>
-                    </div>
-                  ))
+                  <span className={styles.monthLabel}>{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className={styles.sectionCard}>
+          <div className={styles.cardHeaderCenter}>
+            <span className={styles.sectionTitle}>Tỷ lệ hoàn thành</span>
+            <MoreVertical size={16} />
+          </div>
+
+          <div className={styles.donutContainer}>
+            <div className={styles.donutWheel} style={{ "--donut-bg": donutGradient } as React.CSSProperties}>
+              <div className={styles.donutCenter}>
+                <span className={styles.donutPercentage}>{distribution.completedRate}%</span>
+                <span className={styles.donutSubtext}>Thành công</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.legendRow}>
+            <div className={styles.legendItem}>
+              <span className={styles.dotBlue}></span>
+              <span>Thành công</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span className={styles.dotSky}></span>
+              <span>Đang chờ</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span className={styles.dotRed}></span>
+              <span>Hủy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. CỤM BẢNG DƯỚI */}
+      <div className={styles.twoColsGrid}>
+        <div className={styles.sectionCard}>
+          <div className={styles.cardHeaderCenter}>
+            <span className={styles.sectionTitle}>Giao dịch gần đây</span>
+            <span onClick={() => router.push("/admin/orders")} className={styles.linkViewAll}>
+              Xem tất cả →
+            </span>
+          </div>
+
+          <div className={styles.tableResponsive}>
+            <table className={styles.dataTable}>
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Sản phẩm</th>
+                  <th>Ngày đặt</th>
+                  <th>Đơn giá</th>
+                  <th>SL</th>
+                  <th>Tổng tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyData}>
+                      Chưa có đơn hàng nào
+                    </td>
+                  </tr>
                 ) : (
-                  <Text type="secondary">{"Tất cả sản phẩm đều đủ hàng"}</Text>
+                  transactions.map((t) => (
+                    <tr key={t.id} onClick={() => router.push(`/admin/orders`)}>
+                      <td className={styles.tableCode}>{t.id}</td>
+                      <td className={styles.tableProductName}>{t.productName}</td>
+                      <td className={styles.tableDate}>{t.date}</td>
+                      <td>{t.price}</td>
+                      <td className={styles.tableQty}>{t.quantity}</td>
+                      <td className={styles.tableTotal}>{t.totalAmount}</td>
+                    </tr>
+                  ))
                 )}
-              </Card>
-            </Col>
-          </Row>
-        </>
-      ) : null}
-    </>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className={styles.sectionCard}>
+          <div className={styles.cardHeaderCenter}>
+            <span className={styles.sectionTitle}>Khách hàng mới</span>
+            <span onClick={() => router.push("/admin/customers")} className={styles.linkViewAll}>
+              Xem tất cả →
+            </span>
+          </div>
+
+          <div className={styles.customerList}>
+            {customers.length === 0 ? (
+              <div className={styles.emptyData}>Chưa có dữ liệu khách hàng</div>
+            ) : (
+              customers.map((c) => (
+                <div key={c.code} className={styles.customerRow}>
+                  <div className={styles.customerInfo}>
+                    <div className={styles.customerAvatar}>
+                      {c.name ? c.name.charAt(0).toUpperCase() : "U"}
+                    </div>
+                    <div>
+                      <div className={styles.customerName}>{c.name}</div>
+                      <div className={styles.customerTime}>{c.time}</div>
+                    </div>
+                  </div>
+                  <span className={styles.customerCode}>{c.code}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

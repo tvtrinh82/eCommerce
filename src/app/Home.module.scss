@@ -1,0 +1,130 @@
+.pageRoot {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+}
+
+.section {
+  max-width: 1280px;
+  margin: 56px auto 0;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+    margin-top: 40px;
+  }
+}
+
+.container {
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+.subHeading {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1677ff;
+  letter-spacing: 1px;
+}
+
+.heading {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin: 4px 0 0;
+
+  @media (max-width: 768px) {
+    font-size: 22px;
+  }
+}
+
+.headerSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  max-width: 380px;
+  text-align: right;
+
+  @media (max-width: 768px) {
+    text-align: left;
+    font-size: 13px;
+  }
+}
+
+.filterActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brandPills {
+  display: flex;
+  align-items: center;
+  background: #f0f2f5;
+  padding: 4px;
+  border-radius: 20px;
+  gap: 4px;
+
+  @media (max-width: 576px) {
+    overflow-x: auto;
+    width: 100%;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+.pillBtn {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    color: #1677ff;
+  }
+}
+
+.pillActive {
+  background: #ffffff !important;
+  color: #1677ff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.sortSelect {
+  width: 170px;
+}
+
+.emptyResults {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 48px 24px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  margin-top: 20px;
+}

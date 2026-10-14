@@ -1,0 +1,46 @@
+.loadingWrap {
+  text-align: center;
+  padding: 100px 0;
+}
+
+.container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.actionBtn {
+  border-radius: 8px;
+}
+
+.detailsWrap {
+  margin-top: 24px;
+  background-color: #fafafa;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.amountSuccess {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.amountError {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.statusSuccess {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.statusError {
+  color: #ff4d4f;
+  font-weight: 600;
+}

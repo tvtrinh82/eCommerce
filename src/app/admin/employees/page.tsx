@@ -12,6 +12,7 @@ import {
   Typography,
 } from "antd";
 import { apiClient } from "@/lib/api-client";
+import styles from "./Employee.module.scss";
 
 const { Title, Text } = Typography;
 
@@ -28,7 +29,24 @@ export interface EmployeeUser {
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<EmployeeUser[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<string>("");
   const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    try {
+      const storedRole = localStorage.getItem("role");
+      if (storedRole) {
+        setUserRole(storedRole.toUpperCase());
+      } else {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          const r = parsed?.role || parsed?.roles?.[0]?.name || parsed?.roles?.[0] || "";
+          setUserRole(String(r).toUpperCase());
+        }
+      }
+    } catch {}
+  }, []);
 
   // 1. Tải danh sách tài khoản thật từ Backend
   const fetchEmployees = useCallback(async () => {
@@ -126,17 +144,17 @@ export default function EmployeesPage() {
       dataIndex: "id",
       key: "id",
       width: 80,
-      render: (id: number) => <span style={{ fontWeight: 600, color: "#1677ff" }}>#{id}</span>,
+      render: (id: number) => <span className={styles.idText}>#{id}</span>,
     },
     {
       title: "Tài khoản nhân sự",
       key: "name",
       render: (_: any, record: EmployeeUser) => (
         <div>
-          <div style={{ fontWeight: 600, color: "#1f1f1f", fontSize: 14 }}>
+          <div className={styles.employeeName}>
             {record.name || record.username}
           </div>
-          <div style={{ fontSize: 12, color: "#8c8c8c" }}>{record.email}</div>
+          <div className={styles.employeeEmail}>{record.email}</div>
         </div>
       ),
     },
@@ -144,42 +162,50 @@ export default function EmployeesPage() {
       title: "Phân quyền vai trò",
       dataIndex: "role",
       key: "role",
-      render: (role: string, record: EmployeeUser) => (
-        <Select
-          value={role}
-          style={{ width: 230 }}
-          onChange={(newRole) => handleChangeRole(record, newRole)}
-          options={[
-            {
-              value: "PRODUCT_OWNER",
-              label: (
-                <span>
-                  <Tag color="cyan" style={{ marginRight: 6 }}>KHO</Tag>
-                  Quản lý kho & Sản phẩm
-                </span>
-              ),
-            },
-            {
-              value: "ADMIN",
-              label: (
-                <span>
-                  <Tag color="red" style={{ marginRight: 6 }}>ADMIN</Tag>
-                  Quản trị viên toàn quyền
-                </span>
-              ),
-            },
-            {
-              value: "USER",
-              label: (
-                <span>
-                  <Tag color="default" style={{ marginRight: 6 }}>USER</Tag>
-                  Nhân viên tiêu chuẩn
-                </span>
-              ),
-            },
-          ]}
-        />
-      ),
+      render: (role: string, record: EmployeeUser) => {
+        if (userRole === "PRODUCT_OWNER") {
+          if (role === "ADMIN") return <Tag color="red">Quản trị viên toàn quyền (ADMIN)</Tag>;
+          if (role === "PRODUCT_OWNER") return <Tag color="cyan">Quản lý kho & Sản phẩm (PO)</Tag>;
+          return <Tag color="default">Nhân viên tiêu chuẩn (USER)</Tag>;
+        }
+
+        return (
+          <Select
+            value={role}
+            className={styles.roleSelect}
+            onChange={(newRole) => handleChangeRole(record, newRole)}
+            options={[
+              {
+                value: "PRODUCT_OWNER",
+                label: (
+                  <span>
+                    <Tag color="cyan" className={styles.roleTag}>KHO</Tag>
+                    Quản lý kho & Sản phẩm
+                  </span>
+                ),
+              },
+              {
+                value: "ADMIN",
+                label: (
+                  <span>
+                    <Tag color="red" className={styles.roleTag}>ADMIN</Tag>
+                    Quản trị viên toàn quyền
+                  </span>
+                ),
+              },
+              {
+                value: "USER",
+                label: (
+                  <span>
+                    <Tag color="default" className={styles.roleTag}>USER</Tag>
+                    Nhân viên tiêu chuẩn
+                  </span>
+                ),
+              },
+            ]}
+          />
+        );
+      },
     },
     {
       title: "Quyền hạn trong kho",
@@ -209,54 +235,47 @@ export default function EmployeesPage() {
         );
       },
     },
-    {
-      title: "Thao tác",
-      key: "action",
-      align: "center" as const,
-      width: 120,
-      render: (_: any, record: EmployeeUser) => (
-        <Popconfirm
-          title={record.status === "ACTIVE" ? "Tạm khóa quyền tài khoản này?" : "Kích hoạt lại tài khoản?"}
-          onConfirm={() => handleToggleStatus(record)}
-          okText="Đồng ý"
-          cancelText="Hủy"
-        >
-          <Button
-            type="text"
-            danger={record.status === "ACTIVE"}
-            style={{ fontWeight: 500 }}
-          >
-            {record.status === "ACTIVE" ? "Tạm khóa" : "Kích hoạt"}
-          </Button>
-        </Popconfirm>
-      ),
-    },
+    ...(userRole !== "PRODUCT_OWNER"
+      ? [
+          {
+            title: "Thao tác",
+            key: "action",
+            align: "center" as const,
+            width: 120,
+            render: (_: any, record: EmployeeUser) => (
+              <Popconfirm
+                title={record.status === "ACTIVE" ? "Tạm khóa quyền tài khoản này?" : "Kích hoạt lại tài khoản?"}
+                onConfirm={() => handleToggleStatus(record)}
+                okText="Đồng ý"
+                cancelText="Hủy"
+              >
+                <Button
+                  type="text"
+                  danger={record.status === "ACTIVE"}
+                  className={styles.statusBtn}
+                >
+                  {record.status === "ACTIVE" ? "Tạm khóa" : "Kích hoạt"}
+                </Button>
+              </Popconfirm>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
     <Card
-      style={{
-        borderRadius: 12,
-        border: "1px solid #dcdfe6",
-        boxShadow: "none",
-      }}
+      className={styles.card}
       styles={{ body: { padding: "20px 24px" } }}
     >
       {contextHolder}
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
+      <div className={styles.headerRow}>
         <div>
-          <Title level={4} style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#1f1f1f" }}>
+          <Title level={4} className={styles.pageTitle}>
             Phân quyền Nhân viên Quản lý kho
           </Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>
+          <Text type="secondary" className={styles.pageSubtitle}>
             Tự chọn vai trò trực tiếp (PRODUCT_OWNER: Quản lý kho & sản phẩm, ADMIN: Toàn quyền) cho nhân sự trong hệ thống
           </Text>
         </div>

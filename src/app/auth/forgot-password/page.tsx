@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import styles from "./ForgotPassword.module.scss";
+
 const { Title, Text, Paragraph } = Typography;
 
 export default function ForgotPasswordPage() {
@@ -36,32 +38,31 @@ export default function ForgotPasswordPage() {
     <div className="auth-wrapper">
       <div className="auth-container">
         {/* NỬA TRÁI: FORM QUÊN MẬT KHẨU */}
-        <div className="form-container" style={{ left: 0, width: "50%", zIndex: 2 }}>
+        <div className={`form-container ${styles.formContainerLeft}`}>
           <div className="auth-form">
             {sent ? (
-              <div style={{ textAlign: "center", width: "100%", padding: "0 10px" }}>
-                <div style={{ fontSize: 52, color: "#16a34a", marginBottom: 14 }}>
+              <div className={styles.successWrap}>
+                <div className={styles.successIcon}>
                   <CheckCircleOutlined />
                 </div>
                 <Title level={2} className="auth-title">Kiểm tra hộp thư</Title>
-                <Text type="secondary" className="auth-subtitle" style={{ display: "block", marginBottom: 24 }}>
+                <Text type="secondary" className={`auth-subtitle ${styles.successDesc}`}>
                   Chúng tôi đã gửi đường dẫn đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư đến hoặc mục thư rác.
                 </Text>
                 <Button
                   type="primary"
-                  className="action-btn"
+                  className={`action-btn ${styles.btnFull}`}
                   onClick={() => router.push("/auth/login")}
-                  style={{ width: "100%" }}
                 >
                   QUAY LẠI ĐĂNG NHẬP
                 </Button>
               </div>
             ) : (
-              <div style={{ width: "100%" }}>
+              <div className={styles.formWrap}>
                 <Title level={2} className="auth-title">
                   Quên mật khẩu?
                 </Title>
-                <Text type="secondary" className="auth-subtitle" style={{ display: "block", marginBottom: 22 }}>
+                <Text type="secondary" className={`auth-subtitle ${styles.subtitle}`}>
                   Nhập email tài khoản của bạn để nhận liên kết khôi phục mật khẩu
                 </Text>
 
@@ -72,7 +73,7 @@ export default function ForgotPasswordPage() {
                       { required: true, message: "Vui lòng nhập Email!" },
                       { type: "email", message: "Email không hợp lệ!" },
                     ]}
-                    style={{ marginBottom: 20 }}
+                    className={styles.formItem}
                   >
                     <Input
                       prefix={<MailOutlined />}
@@ -85,15 +86,14 @@ export default function ForgotPasswordPage() {
                     type="primary"
                     htmlType="submit"
                     loading={loading}
-                    className="action-btn"
-                    style={{ width: "100%", marginBottom: 18 }}
+                    className={`action-btn ${styles.submitBtn}`}
                   >
                     GỬI LIÊN KẾT XÁC NHẬN
                   </Button>
                 </Form>
 
-                <div style={{ textAlign: "center" }}>
-                  <Link href="/auth/login" className="forgot-link" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+                <div className={styles.bottomLinkWrap}>
+                  <Link href="/auth/login" className={`forgot-link ${styles.backLoginLink}`}>
                     <ArrowLeftOutlined /> Quay lại đăng nhập
                   </Link>
                 </div>
@@ -104,8 +104,8 @@ export default function ForgotPasswordPage() {
 
         {/* NỬA PHẢI: TẤM OVERLAY ĐỒNG BỘ VỚI LOGO NHẤP NHÁY ECOMMERCE */}
         <div className="overlay-container">
-          <div className="overlay" style={{ left: 0, width: "100%" }}>
-            <div className="overlay-panel overlay-right" style={{ width: "100%" }}>
+          <div className={`overlay ${styles.overlayFull}`}>
+            <div className={`overlay-panel overlay-right ${styles.overlayPanelFull}`}>
               <div className="creative-blink-logo">
                 <div className="blink-icon-wrap">
                   <ShoppingOutlined />
@@ -117,10 +117,10 @@ export default function ForgotPasswordPage() {
               </div>
               <div className="brand-motto">SECURE • PROTECTED • TRUSTED</div>
 
-              <Title level={2} style={{ color: "#ffffff", marginBottom: 10, marginTop: 4 }}>
+              <Title level={2} className={styles.overlayTitle}>
                 Bảo mật tài khoản
               </Title>
-              <Paragraph style={{ color: "#d1d5db", fontSize: 13.5, maxWidth: 290, textAlign: "center", lineHeight: 1.6 }}>
+              <Paragraph className={styles.overlayDesc}>
                 Hệ thống bảo mật <strong>eCommerce</strong> sẽ giúp bạn khôi phục quyền truy cập nhanh chóng và an toàn tuyệt đối.
               </Paragraph>
               

@@ -20,12 +20,29 @@ export const useProducts = (params: any = {}) => {
   });
 };
 
+export const useMyProducts = (params: any = {}) => {
+  return useQuery({
+    queryKey: ['my-products', params],
+    queryFn: async () => {
+      const apiParams = { 
+        ...params, 
+        keyword: params.name,
+        page: params.page ? Number(params.page) - 1 : 0 
+      };
+      delete apiParams.name;
+      const response: any = await productApi.getMyProducts(apiParams);
+      return response.data;
+    }
+  });
+};
+
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ProductPayload) => productApi.createProduct(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['my-products'] });
     }
   });
 };
@@ -36,6 +53,7 @@ export const useUpdateProduct = () => {
     mutationFn: ({ id, data }: { id: number; data: ProductPayload }) => productApi.updateProduct(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['my-products'] });
     }
   });
 };
@@ -46,6 +64,7 @@ export const useDeleteProduct = () => {
     mutationFn: (id: number) => productApi.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['my-products'] });
     }
   });
 };

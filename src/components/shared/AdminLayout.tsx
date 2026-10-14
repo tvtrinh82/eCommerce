@@ -1,159 +1,216 @@
 "use client";
 
-import React, { useState } from "react";
-import { Layout, Menu, Typography, Button, Avatar, Space, Badge, Dropdown, message, ConfigProvider } from "antd";
-import {LayoutDashboard,ShoppingCart,Users,Package,Settings,Bell,Search,Globe,LogOut,User,UserCheck,Mail,BarChart
+import React, { useState, useEffect } from "react";
+import { Layout, Dropdown, message, ConfigProvider, theme } from "antd";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  UserCheck,
+  ShoppingCart,
+  BarChart,
+  Mail,
+  FileText,
+  CheckSquare,
+  LogOut,
+  Search,
+  Bell,
+  ChevronDown,
 } from "lucide-react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import styles from "./AdminLayout.module.scss";
 
-const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
+import { adminThemeConfig } from "@/config/theme";
+
+const { Sider } = Layout;
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [messageApi, contextHolder] = message.useMessage();
 
-  React.useEffect(() => {
+  useEffect(() => {
+    localStorage.removeItem("admin_theme");
+    document.documentElement.classList.remove("dark");
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = (localStorage.getItem("role") || "").toUpperCase();
+
+    if (!token) {
+      messageApi.warning("Vui lòng đăng nhập với quyền quản trị viên");
+      router.push("/auth/login");
+      return;
+    }
+
+    if (role && role !== "ADMIN" && role !== "PRODUCT_OWNER") {
+      messageApi.error("Bạn không có quyền truy cập trang quản trị");
+      router.push("/");
+      return;
+    }
+
+    try {
+      const cachedUser = localStorage.getItem("user");
+      if (cachedUser) setUser(JSON.parse(cachedUser));
+    } catch {}
+
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const res = await fetch("/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.data || data);
+      try {
+        const res = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const userData = data.data || data;
+          setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+
+          const userRole = (userData?.role || userData?.roles?.[0]?.name || userData?.roles?.[0] || "").toUpperCase();
+          if (userRole && userRole !== "ADMIN" && userRole !== "PRODUCT_OWNER") {
+            messageApi.error("Bạn không có quyền truy cập trang quản trị");
+            router.push("/");
           }
-        } catch (e) {
-          console.error("Failed to fetch user");
         }
-      }
+      } catch {}
     };
     fetchUser();
-  }, []);
+  }, [router, messageApi]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    messageApi.success("Đã đăng xuất");
+    localStorage.removeItem("user");
+    messageApi.success("Đã đăng xuất thành công");
     router.push("/auth/login");
   };
 
-  const userMenu = {
-    items: [
-      {
-        key: 'profile',
-        label: (
-          <div style={{ padding: '4px 0', minWidth: 120 }}>
-            <Typography.Text strong style={{ display: 'block' }}>{user?.name || user?.username || "Admin"}</Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>{user?.email || "admin@example.com"}</Typography.Text>
-          </div>
-        ),
-      },
-      { type: 'divider' as const },
-      {
-        key: 'logout',
-        icon: <LogOut size={16} />,
-        label: 'Đăng xuất',
-        danger: true,
-        onClick: handleLogout,
-      },
-    ],
-  };
   const menuItems = [
-    { key: "/admin", label: "Tổng quan", icon: <LayoutDashboard size={20} /> },
-    { key: "/admin/products", label: "Sản phẩm", icon: <Package size={20} /> },
-    { key: "/admin/customers", label: "Khách hàng", icon: <Users size={20} /> },
-    { key: "/admin/employees", label: "Nhân viên", icon: <UserCheck size={20} /> },
-    { key: "/admin/orders", label: "Đơn hàng", icon: <ShoppingCart size={20} /> },
-    { key: "/admin/dashboard", label: "Bảng điều khiển", icon: <BarChart size={20} /> },
-    { key: "/admin/emails", label: "Mail lỗi", icon: <Mail size={20} /> },
-    { key: "/admin/reports", label: "Báo cáo", icon: <span>▤</span> },
+    { key: "/admin", label: "Tổng quan", icon: LayoutDashboard },
+    { key: "/admin/products", label: "Sản phẩm", icon: Package },
+    { key: "/admin/customers", label: "Khách hàng", icon: Users },
+    { key: "/admin/employees", label: "Nhân viên", icon: UserCheck },
+    { key: "/admin/orders", label: "Đơn hàng", icon: ShoppingCart },
+    { key: "/admin/tickets", label: "Duyệt đơn (PO)", icon: CheckSquare },
+    { key: "/admin/dashboard", label: "Bảng điều khiển", icon: BarChart },
+    { key: "/admin/emails", label: "Mail lỗi", icon: Mail, badge: 20 },
+    { key: "/admin/reports", label: "Báo cáo", icon: FileText },
   ];
 
-  const handleNavigate = (path: string) => {
-    router.push(path);
-  };
+  const displayName =
+    user?.fullName || user?.name || user?.username || user?.email?.split("@")[0] || "Quản trị viên";
+  const displayRole = user?.role || user?.roles?.[0] || "Admin";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
 
   return (
-    <Layout className="admin-layout-root" style={{ minHeight: "100vh", zoom: "125%" }}>
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}
-        theme="dark"
-        style={{
-          background: "#515154",
-          position: "fixed",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          height: "100vh",
-          overflowY: "auto",
-          zIndex: 100,
-        }}
-      >
-        <div style={{ height: 64, margin: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{
-            width: 40,
-            height: 40,
-            backgroundColor: "#fff",
-            borderRadius: 8,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#515154",
-            fontWeight: "bold",
-            fontSize: 20
-          }}>
-            E
+    <ConfigProvider
+      theme={adminThemeConfig}
+    >
+      <div className={`${styles.layoutRoot} ${styles.lightTheme} light-theme`}>
+        {contextHolder}
+
+        <div className={styles.mainContainer}>
+          {/* Sidebar */}
+          <Sider width={360} className={styles.sidebar}>
+            <div className={styles.sidebarInner}>
+              <div>
+                <div className={styles.logoWrapper} onClick={() => router.push("/admin")}>
+                  <div className={styles.logoIcon}>
+                    <div className={styles.logoGrid}>
+                      <span className={styles.logoDot}></span>
+                      <span className={styles.logoDot}></span>
+                      <span className={styles.logoDot}></span>
+                      <span className={styles.logoDot}></span>
+                    </div>
+                  </div>
+                  <span className={styles.logoText}>eCommerce</span>
+                </div>
+
+                <div className={styles.navMenu}>
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => router.push(item.key)}
+                        className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+                      >
+                        <div className={styles.navItemLeft}>
+                          <Icon size={30} strokeWidth={isActive ? 2.5 : 2} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge && <span className={styles.badge}>{item.badge}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={styles.logoutBottom}>
+                <button onClick={handleLogout} className={styles.btnLogout}>
+                  <LogOut size={30} />
+                  <span>Đăng xuất</span>
+                </button>
+              </div>
+            </div>
+          </Sider>
+
+          {/* Right Header & Content */}
+          <div className={styles.contentWrapper}>
+            <div className={styles.header}>
+              <div />
+
+              <div className={styles.headerRight}>
+                <div className={styles.bellBtn}>
+                  <Bell size={30} />
+                </div>
+
+                <Dropdown
+                  getPopupContainer={(trigger) => trigger.parentElement || document.body}
+                  menu={{
+                    items: [
+                      {
+                        key: "user-info",
+                        label: (
+                          <div className={styles.userDropdownItem}>
+                            <div className={styles.userDropdownName}>{displayName}</div>
+                            <div className={styles.userDropdownEmail}>{user?.email || "admin@example.com"}</div>
+                          </div>
+                        ),
+                      },
+                      { type: "divider" },
+                      {
+                        key: "logout",
+                        icon: <LogOut size={24} />,
+                        label: "Đăng xuất",
+                        danger: true,
+                        onClick: handleLogout,
+                      },
+                    ],
+                  }}
+                  trigger={["click"]}
+                >
+                  <div className={styles.userTrigger}>
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={displayName} className={styles.avatarImage} />
+                    ) : (
+                      <div className={styles.avatarLetter}>{avatarLetter}</div>
+                    )}
+                    <div className={styles.userMeta}>
+                      <div className={styles.userName}>{displayName}</div>
+                      <div className={styles.userRole}>{displayRole}</div>
+                    </div>
+                    <ChevronDown size={24} />
+                  </div>
+                </Dropdown>
+              </div>
+            </div>
+
+            <div className={styles.mainContent}>{children}</div>
           </div>
-          {!collapsed && <Title level={4} style={{ margin: "0 0 0 12px", color: "#fff" }}>Commerce</Title>}
         </div>
-        <ConfigProvider theme={{ components: { Menu: { itemHeight: 48, fontSize: 18, itemMarginInline: 12 } } }}>
-          <Menu
-            theme="dark"
-            selectedKeys={[pathname]}
-            mode="inline"
-            items={menuItems}
-            onClick={({ key }) => handleNavigate(key)}
-            style={{ background: "#515154" }}
-          />
-        </ConfigProvider>
-      </Sider>
-
-      <Layout
-        className="site-layout"
-        style={{
-          background: "#f5f5f7",
-          marginLeft: collapsed ? 80 : 200,
-          transition: "margin-left 0.2s ease",
-          minHeight: "100vh",
-        }}
-      >
-        <Header style={{ padding: "0 24px", background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 1px 4px rgba(0,21,41,.08)", zIndex: 9 }}>
-          <div>
-            <Title level={4} style={{ margin: 0, color: "#1f1f1f" }}>
-              {menuItems.find(m => m.key === pathname)?.label || "Tổng quan"}
-            </Title>
-          </div>
-          <Space size="large">
-            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']} getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}>
-              <Avatar style={{ backgroundColor: '#515154', cursor: 'pointer' }}>
-                {user?.name ? user.name.charAt(0).toUpperCase() : user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
-              </Avatar>
-            </Dropdown>
-          </Space>
-        </Header>
-
-        <Content style={{ margin: "24px 16px", minHeight: 280 }}>
-          {contextHolder}
-          {children}
-        </Content>
-      </Layout>
-    </Layout>
+      </div>
+    </ConfigProvider>
   );
 }

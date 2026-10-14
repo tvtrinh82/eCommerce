@@ -195,7 +195,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           WebkitBackdropFilter: "blur(12px)",
           borderBottom: isDarkMode ? '1px solid #27272a' : '1px solid #e4e4e7'
         }}>
-          {/* LOGO GIỐNG HỆT TRANG ĐĂNG NHẬP */}
+          {/* LOGO ECOMMERCE */}
           <div
             style={{
               cursor: "pointer",
@@ -203,37 +203,30 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               userSelect: "none",
               display: "flex",
               alignItems: "center",
+              gap: 10,
               height: "100%"
             }}
             onClick={() => router.push("/")}
           >
             <div
-              className={`creative-blink-logo ${!isDarkMode ? "creative-blink-logo-light" : ""}`}
               style={{
-                marginBottom: 0,
-                padding: "3px 12px",     /* Giảm bớt padding dọc để không tràn mép */
-                gap: 8,
-                cursor: "pointer",
-                display: "inline-flex",
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: "linear-gradient(135deg, #1677FF 0%, #0050B3 100%)",
+                display: "flex",
                 alignItems: "center",
-                boxSizing: "border-box"
+                justifyContent: "center",
+                color: "#ffffff",
+                fontSize: 18,
+                boxShadow: "0 4px 12px rgba(22, 119, 255, 0.3)"
               }}
             >
-              <div
-                className="blink-icon-wrap"
-                style={{ width: 28, height: 28, fontSize: 15, borderRadius: 8 }} /* Giảm từ 34 xuống 28 */
-              >
-                <ShoppingOutlined />
-                <span className="blink-dot" style={{ top: 2, right: 2, width: 6, height: 6 }}></span>
-              </div>
-              <span
-                className={`blink-brand-name ${!isDarkMode ? "blink-brand-name-light" : ""}`}
-                style={{ fontSize: 17, lineHeight: 1 }} /* Giảm từ 20 xuống 17 và khống chế line-height */
-              >
-                <span style={{ color: !isDarkMode ? "#18181b" : "#ffffff" }}>e</span>
-                <span className="blink-accent">Commerce</span>
-              </span>
+              <ShoppingOutlined />
             </div>
+            <span style={{ fontSize: 19, fontWeight: 800, color: !isDarkMode ? "#1f1f1f" : "#ffffff", letterSpacing: "-0.5px" }}>
+              e<span style={{ color: "#1677FF" }}>Commerce</span>
+            </span>
           </div>
 
           {/* DESKTOP MENU */}

@@ -1,0 +1,155 @@
+.pageRoot {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+
+  &.darkMode {
+    background-color: #141414;
+  }
+}
+
+.main {
+  flex: 1;
+  padding: 36px 0 64px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
+}
+
+.topBar {
+  margin-bottom: 24px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #1677ff;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateX(-4px);
+  }
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .darkMode & {
+    color: #ffffff;
+  }
+}
+
+.countTag {
+  font-size: 18px;
+  color: #8c8c8c;
+  font-weight: 600;
+}
+
+.tableCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+
+  .darkMode & {
+    background: #1f1f1f;
+    border-color: #303030;
+  }
+}
+
+.orderTable {
+  :global(.ant-table-thead > tr > th) {
+    font-weight: 700;
+    font-size: 14.5px;
+    background-color: #f8fafc;
+  }
+}
+
+.orderIdText {
+  color: #1677ff;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.dateText {
+  color: #595959;
+  font-size: 13.5px;
+}
+
+.pendingProductText {
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.productsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.productLine {
+  color: #1f1f1f;
+
+  .darkMode & {
+    color: #f0f0f0;
+  }
+}
+
+.amountText {
+  color: #1677ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.statusTag {
+  border-radius: 6px;
+  font-weight: 700;
+  padding: 2px 10px;
+  font-size: 12.5px;
+}
+
+.detailBtn {
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emptyBox {
+  padding: 60px 0;
+  text-align: center;
+}

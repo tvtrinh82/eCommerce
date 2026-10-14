@@ -6,20 +6,26 @@ export type OrderStatus =
   | 'AWAITING_PAYMENT' 
   | 'PAID' 
   | 'CONFIRMED' 
+  | 'PROCESSING'
   | 'COMPLETED' 
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'REFUND_REQUESTED'
+  | 'REFUNDED';
 
 interface StatusTagProps {
   status: OrderStatus | string;
 }
 
 const statusConfig: Record<string, { color: string; label: string }> = {
-  PENDING: { color: 'gold', label: 'Mới tạo, đang sửa được' },
-  AWAITING_PAYMENT: { color: 'orange', label: 'Đã checkout, chờ thanh toán' },
+  PENDING: { color: 'gold', label: 'Chờ duyệt' },
+  AWAITING_PAYMENT: { color: 'orange', label: 'Chờ thanh toán' },
   PAID: { color: 'green', label: 'Đã thanh toán' },
-  CONFIRMED: { color: 'blue', label: 'Admin đã xác nhận' },
+  CONFIRMED: { color: 'blue', label: 'Đã xác nhận' },
+  PROCESSING: { color: 'processing', label: 'Đang xử lý / Đang giao' },
   COMPLETED: { color: 'cyan', label: 'Hoàn thành' },
-  CANCELLED: { color: 'red', label: 'Đã huỷ' },
+  CANCELLED: { color: 'red', label: 'Đã hủy' },
+  REFUND_REQUESTED: { color: 'purple', label: 'Yêu cầu hoàn tiền' },
+  REFUNDED: { color: 'default', label: 'Đã hoàn tiền' },
 };
 
 export const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
@@ -30,8 +36,8 @@ export const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
   }
 
   return (
-    <Tag color={config.color} title={config.label}>
-      {status}
+    <Tag color={config.color}>
+      {config.label}
     </Tag>
   );
 };

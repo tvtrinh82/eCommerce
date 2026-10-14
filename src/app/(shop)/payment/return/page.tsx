@@ -6,6 +6,7 @@ import { Result, Button, Spin, Card, Typography, Descriptions } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ShoppingOutlined, EyeOutlined } from '@ant-design/icons';
 import { apiClient } from '@/lib/api-client';
 import { formatCurrency } from '@/lib/format';
+import styles from './PaymentReturn.module.scss';
 
 const { Title, Text } = Typography;
 
@@ -65,7 +66,7 @@ function PaymentReturnContent() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+      <div className={styles.loadingWrap}>
         <Spin size="large" tip="Đang kiểm tra và xác nhận kết quả giao dịch VNPay..." />
       </div>
     );
@@ -76,8 +77,8 @@ function PaymentReturnContent() {
   const amount = result?.amount || (vnpAmount ? Number(vnpAmount) / 100 : 0);
 
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: '0 20px' }}>
-      <Card style={{ borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+    <div className={styles.container}>
+      <Card className={styles.card}>
         <Result
           status={isSuccess ? 'success' : 'error'}
           title={isSuccess ? 'Thanh toán thành công!' : 'Thanh toán không thành công'}
@@ -93,7 +94,7 @@ function PaymentReturnContent() {
                 key="order"
                 icon={<EyeOutlined />}
                 size="large"
-                style={{ borderRadius: 8 }}
+                className={styles.actionBtn}
                 onClick={() => router.push(`/orders/${orderId}`)}
               >
                 Xem chi tiết đơn hàng #{orderId}
@@ -103,14 +104,14 @@ function PaymentReturnContent() {
               key="history"
               icon={<ShoppingOutlined />}
               size="large"
-              style={{ borderRadius: 8 }}
+              className={styles.actionBtn}
               onClick={() => router.push('/orders/history')}
             >
               Lịch sử đơn hàng
             </Button>,
           ]}
         >
-          <div style={{ marginTop: 24, backgroundColor: '#fafafa', padding: 20, borderRadius: 12 }}>
+          <div className={styles.detailsWrap}>
             <Descriptions title="Chi tiết giao dịch" column={1} size="small" bordered>
               {orderId && (
                 <Descriptions.Item label="Mã đơn hàng">
@@ -119,7 +120,7 @@ function PaymentReturnContent() {
               )}
               {amount > 0 && (
                 <Descriptions.Item label="Số tiền thanh toán">
-                  <span style={{ color: isSuccess ? '#52c41a' : '#ff4d4f', fontWeight: 600 }}>
+                  <span className={isSuccess ? styles.amountSuccess : styles.amountError}>
                     {formatCurrency(amount)}
                   </span>
                 </Descriptions.Item>
@@ -136,9 +137,9 @@ function PaymentReturnContent() {
               )}
               <Descriptions.Item label="Trạng thái">
                 {isSuccess ? (
-                  <span style={{ color: '#52c41a', fontWeight: 600 }}>Thành công (00)</span>
+                  <span className={styles.statusSuccess}>Thành công (00)</span>
                 ) : (
-                  <span style={{ color: '#ff4d4f', fontWeight: 600 }}>
+                  <span className={styles.statusError}>
                     Thất bại (Mã: {vnpResponseCode || 'Lỗi'})
                   </span>
                 )}
@@ -157,7 +158,7 @@ export default function PaymentReturnPage() {
   return (
     <ClientLayout>
       <Suspense fallback={
-        <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <div className={styles.loadingWrap}>
           <Spin size="large" />
         </div>
       }>

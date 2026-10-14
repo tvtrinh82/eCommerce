@@ -1,0 +1,582 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: #1e293b;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.headerSubtitle {
+  font-size: 13px;
+  color: #64748b;
+
+  :global(.dark-theme) & {
+    color: #94a3b8 !important;
+  }
+}
+
+.btnPrimaryAction {
+  height: 40px;
+  padding: 0 22px;
+  background-color: #2563eb;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.cardHero {
+  background-color: #2563eb;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.cardHeroIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardHeroValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cardHeroLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+}
+
+.statCard {
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+
+  :global(.dark-theme) & {
+    background-color: #111827 !important;
+    border: 1px solid #1f293d !important;
+  }
+}
+
+.iconPurple {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: #f5f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+
+  :global(.dark-theme) & {
+    background-color: #1e1b4b !important;
+    color: #a78bfa !important;
+  }
+}
+
+.iconAmber {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: #fffbeb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+
+  :global(.dark-theme) & {
+    background-color: #451a03 !important;
+    color: #fbbf24 !important;
+  }
+}
+
+.iconBlue {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: #f0f9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0284c7;
+
+  :global(.dark-theme) & {
+    background-color: #082f49 !important;
+    color: #38bdf8 !important;
+  }
+}
+
+.statValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+
+  :global(.dark-theme) & {
+    color: #94a3b8 !important;
+  }
+}
+
+.twoColsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.sectionCard {
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+
+  :global(.dark-theme) & {
+    background-color: #111827 !important;
+    border: 1px solid #1f293d !important;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardHeaderCenter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+
+  :global(.dark-theme) & {
+    color: #cbd5e1 !important;
+  }
+}
+
+.bigCounter {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 6px;
+  color: #0f172a;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.counterLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-right: 6px;
+}
+
+.filterWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+}
+
+.filterPill {
+  display: flex;
+  border-radius: 18px;
+  padding: 3px;
+  background-color: #f8fafc;
+
+  :global(.dark-theme) & {
+    background-color: #162032 !important;
+  }
+}
+
+.pillBtn {
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 14px;
+  background-color: transparent;
+  color: #94a3b8;
+  font-weight: 500;
+
+  &.pillActive {
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+    color: #0f172a;
+
+    :global(.dark-theme) & {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+.legendRow {
+  display: flex;
+  gap: 20px;
+  margin: 16px 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+
+  :global(.dark-theme) & {
+    color: #94a3b8 !important;
+  }
+}
+
+.dotBlue {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2563eb;
+}
+
+.dotSky {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+}
+
+.dotRed {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background-color: #ef4444;
+}
+
+.chartBarsWrapper {
+  display: flex;
+  align-items: flex-end;
+  height: 170px;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f8fafc;
+
+  :global(.dark-theme) & {
+    border-color: #1f293d !important;
+  }
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.barGroup {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 130px;
+}
+
+.barReach {
+  width: 10px;
+  height: var(--bar-rev, 10%);
+  background-color: #2563eb;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.barEngage {
+  width: 10px;
+  height: var(--bar-count, 10%);
+  background-color: #38bdf8;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.monthLabel {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.donutContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.donutWheel {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--donut-bg, conic-gradient(#2563eb 0% 64%, #38bdf8 64% 88%, #ef4444 88% 100%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutCenter {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background-color: #ffffff;
+  color: #0f172a;
+
+  :global(.dark-theme) & {
+    background-color: #111827 !important;
+    color: #f8fafc !important;
+  }
+}
+
+.donutPercentage {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.donutSubtext {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.linkViewAll {
+  font-size: 13px;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+
+  :global(.dark-theme) & {
+    color: #60a5fa !important;
+  }
+}
+
+.tableResponsive {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th {
+    padding-bottom: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    font-size: 12px;
+    border-bottom: 1px solid #f8fafc;
+
+    :global(.dark-theme) & {
+      border-color: #1f293d !important;
+      color: #94a3b8 !important;
+    }
+  }
+
+  td {
+    padding: 14px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #f8fafc;
+
+    :global(.dark-theme) & {
+      border-color: #1f293d !important;
+      color: #e2e8f0 !important;
+    }
+  }
+
+  tbody tr {
+    cursor: pointer;
+  }
+}
+
+.tableCode {
+  color: #3b82f6;
+  font-weight: 600;
+
+  :global(.dark-theme) & {
+    color: #60a5fa !important;
+  }
+}
+
+.tableProductName {
+  font-weight: 600;
+  color: #1e293b;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.tableDate {
+  color: #94a3b8;
+}
+
+.tableQty {
+  color: #2563eb;
+  font-weight: 700;
+
+  :global(.dark-theme) & {
+    color: #38bdf8 !important;
+  }
+}
+
+.tableTotal {
+  font-weight: 700;
+  color: #0f172a;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.customerList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.customerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customerAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #475569;
+  font-size: 14px;
+
+  :global(.dark-theme) & {
+    background-color: #1e293b !important;
+    color: #cbd5e1 !important;
+  }
+}
+
+.customerName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.customerTime {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.customerCode {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #3b82f6;
+
+  :global(.dark-theme) & {
+    color: #60a5fa !important;
+  }
+}
+
+.emptyData {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+}
+
+.loadingCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 450px;
+}

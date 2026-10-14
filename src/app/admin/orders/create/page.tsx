@@ -8,6 +8,8 @@ import { useCustomers } from "@/features/customers/hooks";
 import { useProducts } from "@/features/products/hooks";
 import { useCreateOrder } from "@/features/orders/hooks";
 
+import styles from "./CreateOrder.module.scss";
+
 export default function CreateOrderPage() {
   const router = useRouter();
   const [messageApi, contextHolder] = antdMessage.useMessage();
@@ -133,9 +135,8 @@ export default function CreateOrderPage() {
     <>
       {contextHolder}
       <form onSubmit={handleSubmit} className="order-page-card">
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          
-          <h1 className="page-heading" style={{ margin: 0 }}>Tạo đơn hàng</h1>
+        <div className={styles.headerWrap}>
+          <h1 className={`page-heading ${styles.heading}`}>Tạo đơn hàng</h1>
         </div>
 
         <div className="main-layout">
@@ -282,9 +283,9 @@ export default function CreateOrderPage() {
         {/* Chân trang thanh toán và nút Tạo đơn */}
         <div className="bottom-bar">
           <div className="note-text">
-            <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            {/* <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
               Thoát
-            </Button>
+            </Button> */}
                 
           </div>
 

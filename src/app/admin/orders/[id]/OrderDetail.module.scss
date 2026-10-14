@@ -1,0 +1,202 @@
+.loadingWrap {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.actionBtn {
+  border-radius: 6px;
+  height: 34px;
+  padding: 0 16px;
+  font-weight: 600;
+  font-size: 13.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.productImg {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.noImgBox {
+  width: 54px;
+  height: 54px;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noImgText {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.card {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid #eef2f6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  max-width: 100% !important;
+  margin: 0;
+  padding: 16px 24px;
+
+  :global(.dark-theme) & {
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
+  }
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pageTitle {
+  margin: 0 !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  color: #0f172a !important;
+  line-height: 1.3 !important;
+
+  :global(.dark-theme) & {
+    color: #f8fafc !important;
+  }
+}
+
+.statusBadge {
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid var(--badge-border);
+  background-color: var(--badge-bg);
+  color: var(--badge-color);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exitBtn {
+  border-radius: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 13.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+.orderInfoCard {
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 15px;
+  color: #1f1f1f;
+}
+
+.cardTitle {
+  margin: 0 0 4px 0 !important;
+  font-weight: 700 !important;
+}
+
+.historyTitle {
+  margin: 0 0 18px 0 !important;
+  font-weight: 700 !important;
+}
+
+.infoValue {
+  color: #262626;
+}
+
+.historyCard {
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.timelineItemWrap {
+  margin-bottom: 6px;
+}
+
+.timelineTitle {
+  font-weight: 600;
+  color: #1f1f1f;
+  font-size: 14px;
+}
+
+.timelineDate {
+  color: #595959;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.cancelReasonBox {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #595959;
+}
+
+.cancelHeader {
+  margin-bottom: 4px;
+}
+
+.cancelStatus {
+  font-weight: 600;
+  color: #262626;
+}
+
+.cancelReason {
+  margin-top: 2px;
+}
+
+.productsSection {
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.productsTitle {
+  margin: 0 0 12px 0 !important;
+  font-weight: 700 !important;
+}

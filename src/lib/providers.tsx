@@ -24,11 +24,27 @@ export default function Providers({ children }: { children: ReactNode }) {
         locale={viVN}
         theme={{
           token: {
-            colorPrimary: '#18181b', // Đen trầm sang trọng (thay cho xanh dương cũ)
-            colorInfo: '#27272a',
-            colorTextBase: '#18181b',
-            colorBgBase: '#ffffff',
-            borderRadius: 8,
+            colorPrimary: '#1677FF', // eCommerce Electric Blue
+            colorInfo: '#1677FF',
+            colorLink: '#1677FF',
+            colorTextBase: '#1D2129',
+            colorBgBase: '#FFFFFF',
+            borderRadius: 10,
+            fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          },
+          components: {
+            Button: {
+              borderRadius: 8,
+              controlHeight: 40,
+              fontWeight: 600,
+            },
+            Card: {
+              borderRadiusLG: 14,
+            },
+            Input: {
+              borderRadius: 8,
+              controlHeight: 40,
+            },
           },
         }}
       >

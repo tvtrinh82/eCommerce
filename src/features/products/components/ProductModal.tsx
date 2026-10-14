@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { useCreateProduct, useUpdateProduct } from '../hooks';
 import { Product, ProductPayload } from '../types';
 import { apiClient } from '@/lib/api-client';
+import styles from './ProductModal.module.scss';
 
 interface ProductModalProps {
   open: boolean;
@@ -132,7 +133,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   const uploadButton = (
     <div>
       {uploading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Tải ảnh</div>
+      <div className={styles.uploadIconText}>Tải ảnh</div>
     </div>
   );
 
@@ -140,7 +141,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     <>
       {contextHolder}
       <Modal
-      title={<span style={{ fontSize: 20 }}>{product ? 'Thêm / Sửa sản phẩm' : 'Thêm / Sửa sản phẩm'}</span>}
+      title={<span className={styles.modalTitle}>{product ? 'Thêm / Sửa sản phẩm' : 'Thêm / Sửa sản phẩm'}</span>}
       open={open}
       width={700}
       onCancel={onClose}
@@ -159,12 +160,12 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         </Button>
       ]}
     >
-      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ display: 'flex', gap: 24 }}>
+      <div className={styles.formContainer}>
+        <div className={styles.formRow}>
           {/* Cột trái: Form thông tin */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className={styles.leftColumn}>
             <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Tên sản phẩm <span style={{ color: 'red' }}>*</span></label>
+              <label className={styles.label}>Tên sản phẩm <span className={styles.required}>*</span></label>
               <Controller
                 name="name"
                 control={control}
@@ -172,12 +173,12 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                   <Input {...field} size="large" status={errors.name ? 'error' : ''} placeholder="Tên sản phẩm" />
                 )}
               />
-              {errors.name && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{errors.name.message}</div>}
+              {errors.name && <div className={styles.errorMessage}>{errors.name.message}</div>}
             </div>
 
-            <div style={{ display: 'flex', gap: 16 }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Giá (đ) <span style={{ color: 'red' }}>*</span></label>
+            <div className={styles.twoColumnRow}>
+              <div className={styles.flexOne}>
+                <label className={styles.label}>Giá (đ) <span className={styles.required}>*</span></label>
                 <Controller
                   name="price"
                   control={control}
@@ -186,17 +187,17 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                       {...field}
                       size="large"
                       status={errors.price ? 'error' : ''}
-                      style={{ width: '100%' }} 
+                      className={styles.fullWidth}
                       formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value ? Number(value.replace(/\$\s?|(,*)/g, '')) : 0}
                     />
                   )}
                 />
-                {errors.price && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{errors.price.message}</div>}
+                {errors.price && <div className={styles.errorMessage}>{errors.price.message}</div>}
               </div>
 
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Tồn kho <span style={{ color: 'red' }}>*</span></label>
+              <div className={styles.flexOne}>
+                <label className={styles.label}>Tồn kho <span className={styles.required}>*</span></label>
                 <Controller
                   name="stock"
                   control={control}
@@ -205,22 +206,22 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                       {...field} 
                       size="large"
                       status={errors.stock ? 'error' : ''}
-                      style={{ width: '100%' }} 
+                      className={styles.fullWidth}
                       precision={0} 
                     />
                   )}
                 />
-                {errors.stock && <div style={{ color: 'red', fontSize: 14, marginTop: 4 }}>{errors.stock.message}</div>}
+                {errors.stock && <div className={styles.errorMessage}>{errors.stock.message}</div>}
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Trạng thái</label>
+              <label className={styles.label}>Trạng thái</label>
               <Controller
                 name="status"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} size="large" style={{ width: '100%' }}>
+                  <Select {...field} size="large" className={styles.fullWidth}>
                     <Select.Option value="ACTIVE">ACTIVE</Select.Option>
                     <Select.Option value="DEACTIVE">DEACTIVE</Select.Option>
                   </Select>
@@ -231,8 +232,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           </div>
 
           {/* Cột phải: Upload ảnh */}
-          <div style={{ width: 200, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Ảnh sản phẩm</label>
+          <div className={styles.rightColumn}>
+            <label className={styles.label}>Ảnh sản phẩm</label>
             <Upload
               name="file"
               listType="picture-card"
@@ -242,12 +243,12 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
               accept="image/*"
             >
               {imageUrl ? (
-                <img src={imageUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={imageUrl} alt="avatar" className={styles.productAvatar} />
               ) : (
                 uploadButton
               )}
             </Upload>
-            <div style={{ fontSize: 12, color: '#8c8c8c', textAlign: 'center', marginTop: 8 }}>
+            <div className={styles.uploadHint}>
               Hỗ trợ định dạng JPG, PNG. Tối đa 5MB.
             </div>
           </div>

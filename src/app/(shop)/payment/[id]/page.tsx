@@ -7,6 +7,7 @@ import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 import { usePaymentInfo, useProcessPayment } from '@/features/payments/hooks';
 import { formatCurrency, formatTime } from '@/lib/format';
+import styles from './PaymentPage.module.scss';
 
 export default function MockPaymentPage() {
     const params = useParams();
@@ -36,14 +37,10 @@ export default function MockPaymentPage() {
         }
     };
 
-    const containerStyle: React.CSSProperties = { minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24 };
-    const cardStyle: React.CSSProperties = { width: '100%', maxWidth: 480, backgroundColor: '#ffffff', borderRadius: 8, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', border: '1px solid #e8e8e8', overflow: 'hidden' };
-    const loadingWrapperStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' };
-
     if (isLoading) {
         return (
-            <div style={containerStyle}>
-                <div style={{ ...cardStyle, ...loadingWrapperStyle }}>
+            <div className={styles.container}>
+                <div className={`${styles.paymentCard} ${styles.loadingWrapper}`}>
                     <Spin size="large" tip="Đang tải thông tin cổng thanh toán..." />
                 </div>
             </div>
@@ -52,8 +49,8 @@ export default function MockPaymentPage() {
 
     if (isError || !payment) {
         return (
-            <div style={containerStyle}>
-                <div style={{ ...cardStyle, ...loadingWrapperStyle }}>
+            <div className={styles.container}>
+                <div className={`${styles.paymentCard} ${styles.errorWrapper}`}>
                     <Alert
                         message="Không tìm thấy thông tin thanh toán"
                         description={error?.message || 'Giao dịch không tồn tại hoặc đơn hàng đã hoàn tất.'}
@@ -62,7 +59,7 @@ export default function MockPaymentPage() {
                     />
                     <Button
                         type="default"
-                        style={{ flex: 1, height: 40, marginTop: 16 }}
+                        className={styles.successButton}
                         onClick={() => router.push(`/orders/${orderId}`)}
                     >
                         Quay lại đơn hàng
@@ -73,51 +70,51 @@ export default function MockPaymentPage() {
     }
 
     return (
-        <div style={containerStyle}>
-            <div style={cardStyle}>
+        <div className={styles.container}>
+            <div className={styles.paymentCard}>
                 {/* Header Cổng thanh toán giả lập */}
-                <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1 style={{ fontSize: 16, fontWeight: 600, color: '#262626', margin: 0 }}>Cổng thanh toán (giả lập)</h1>
-                    <span style={{ fontSize: 12, color: '#8c8c8c', backgroundColor: '#fafafa', padding: '2px 8px', borderRadius: 4, border: '1px solid #d9d9d9' }}>Mock Gateway</span>
+                <div className={styles.header}>
+                    <h1 className={styles.title}>Cổng thanh toán (giả lập)</h1>
+                    <span className={styles.tag}>Mock Gateway</span>
                 </div>
 
                 {/* Nội dung thanh toán theo Wireframe B4 */}
-                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 14, color: '#595959' }}>Mã giao dịch:</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: '#262626' }}>{payment.transactionId}</span>
+                <div className={styles.content}>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Mã giao dịch:</span>
+                        <span className={styles.value}>{payment.transactionId}</span>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 14, color: '#595959' }}>Đơn hàng:</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: '#262626' }}>#{payment.orderId}</span>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Đơn hàng:</span>
+                        <span className={styles.value}>#{payment.orderId}</span>
                     </div>
 
-                    <div style={{ height: 1, backgroundColor: '#f0f0f0', margin: '4px 0' }} />
+                    <div className={styles.divider} />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 14, color: '#595959' }}>Số tiền thanh toán:</span>
-                        <span style={{ fontSize: 24, fontWeight: 700, color: '#ff4d4f' }}>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Số tiền thanh toán:</span>
+                        <span className={styles.highlightAmount}>
                             {formatCurrency(payment.amount)}
                         </span>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 14, color: '#595959' }}>Thời hạn:</span>
-                        <span style={{ fontSize: 13, color: '#8c8c8c' }}>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Thời hạn:</span>
+                        <span className={styles.expiredNotice}>
                             Hết hạn lúc {formatTime(payment.expiresAt)}
                         </span>
                     </div>
                 </div>
 
                 {/* 2 nút thao tác theo đúng Wireframe */}
-                <div style={{ padding: '16px 24px 24px 24px', display: 'flex', gap: 12 }}>
+                <div className={styles.actions}>
                     <Button
                         type="primary"
                         icon={<CheckCircleOutlined />}
                         loading={processPaymentMutation.isPending}
                         onClick={() => handlePaymentAction(true)}
-                        style={{ flex: 1, height: 40 }}
+                        className={styles.successButton}
                     >
                         Thanh toán thành công
                     </Button>
@@ -127,7 +124,7 @@ export default function MockPaymentPage() {
                         icon={<CloseCircleOutlined />}
                         loading={processPaymentMutation.isPending}
                         onClick={() => handlePaymentAction(false)}
-                        style={{ flex: 1, height: 40 }}
+                        className={styles.failedButton}
                     >
                         Thanh toán thất bại
                     </Button>

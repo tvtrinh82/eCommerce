@@ -1,0 +1,73 @@
+.container {
+  width: 100%;
+  padding: 24px 28px;
+  background-color: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+
+  :global(.dark-theme) & {
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
+  }
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+
+  :global(.dark-theme) & {
+    color: #f8fafc;
+  }
+}
+
+.ticketTabs {
+  margin-bottom: 16px;
+}
+
+.orderLink {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.requesterText {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.timeText {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnApprove {
+  background-color: #1677ff !important;
+  border-color: #1677ff !important;
+  font-weight: 600;
+}
+
+.btnReject {
+  font-weight: 600;
+}

@@ -1,0 +1,268 @@
+.pageRoot {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  padding: 36px 0 64px;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
+}
+
+.topNav {
+  margin-bottom: 24px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #1677ff;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 8px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin: 0;
+}
+
+.stepsWrap {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 32px;
+  border: 1px solid #f0f0f0;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+.formCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.stepContent {
+  margin-bottom: 28px;
+}
+
+.stepHeading {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin-bottom: 24px;
+}
+
+.paymentSelector {
+  margin-bottom: 24px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.radioOption {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 !important;
+  transition: all 0.2s ease;
+
+  &:hover,
+  &:global(.ant-radio-wrapper-checked) {
+    border-color: #1677ff;
+    background: #fbfdff;
+  }
+}
+
+.optionContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.optionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f1f1f;
+  display: block;
+}
+
+.optionSubtitle {
+  font-size: 12.5px;
+  color: #8c8c8c;
+  display: block;
+  margin-top: 2px;
+}
+
+.cardBadges {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1677ff;
+  background: #e6f4ff;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.cardForm {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.stepActions {
+  margin-top: 24px;
+}
+
+.nextBtn {
+  border-radius: 12px !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 20px rgba(22, 119, 255, 0.3);
+}
+
+.summaryCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+}
+
+.summaryTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin-bottom: 20px;
+}
+
+.miniList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.miniItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.miniImg {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  background: #fbfbfb;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.miniInfo {
+  flex: 1;
+}
+
+.miniName {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1f1f1f;
+  display: block;
+}
+
+.miniQty {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.miniPrice {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1677ff;
+}
+
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #595959;
+  margin-bottom: 8px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.totalLabel {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1f1f1f;
+}
+
+.totalVal {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1677ff;
+}
+
+.securitySeal {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 10px;
+  padding: 12px 16px;
+
+  strong {
+    font-size: 13px;
+    color: #237804;
+    display: block;
+  }
+
+  p {
+    font-size: 11.5px;
+    color: #52c41a;
+    margin: 2px 0 0;
+  }
+}

@@ -6,6 +6,7 @@ import { FileWordOutlined, FilePdfOutlined, DownloadOutlined, BarChartOutlined, 
 import { fetchAllOrders } from "@/features/dashboard/api";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import styles from "./DashboardReports.module.scss";
 dayjs.extend(isBetween);
 
 export default function ReportsPage() {
@@ -179,15 +180,15 @@ export default function ReportsPage() {
       dataIndex: "id",
       key: "id",
       width: 100,
-      render: (id: number) => <span style={{ color: "#1677ff", fontWeight: 600 }}>#{id}</span>,
+      render: (id: number) => <span className={styles.orderId}>#{id}</span>,
     },
     {
       title: "Khách hàng",
       key: "customer",
       render: (_: any, r: any) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{r.customerName || "Khách hàng"}</div>
-          <div style={{ fontSize: "12px", color: "#888" }}>{r.customerEmail}</div>
+          <div className={styles.customerName}>{r.customerName || "Khách hàng"}</div>
+          <div className={styles.customerEmail}>{r.customerEmail}</div>
         </div>
       ),
     },
@@ -203,7 +204,7 @@ export default function ReportsPage() {
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (amt: number) => (
-        <span style={{ fontWeight: 600, color: "#1f1f1f" }}>
+        <span className={styles.totalAmount}>
           {Number(amt || 0).toLocaleString("vi-VN")} đ
         </span>
       ),
@@ -214,20 +215,31 @@ export default function ReportsPage() {
       key: "status",
       render: (st: string) => {
         let color = "default";
-        if (st === "COMPLETED") color = "green";
-        if (st === "CONFIRMED" || st === "PROCESSING") color = "blue";
-        if (st === "CANCELLED") color = "red";
-        if (st === "PENDING") color = "gold";
-        return <Tag color={color}>{st}</Tag>;
+        let label = "Chờ duyệt";
+        if (st === "COMPLETED") { color = "green"; label = "Hoàn thành"; }
+        else if (st === "CONFIRMED") { color = "blue"; label = "Đã xác nhận"; }
+        else if (st === "PROCESSING") { color = "blue"; label = "Đang xử lý / Giao"; }
+        else if (st === "PAID") { color = "green"; label = "Đã thanh toán"; }
+        else if (st === "AWAITING_PAYMENT") { color = "gold"; label = "Chờ thanh toán"; }
+        else if (st === "CANCELLED") { color = "red"; label = "Đã hủy"; }
+        else if (st === "PENDING") { color = "gold"; label = "Chờ duyệt"; }
+        else if (st === "REFUND_REQUESTED") { color = "purple"; label = "Yêu cầu hoàn tiền"; }
+        else if (st === "REFUNDED") { color = "default"; label = "Đã hoàn tiền"; }
+        return <Tag color={color}>{label}</Tag>;
       },
     },
     {
       title: "Thanh toán",
       dataIndex: "paymentStatus",
       key: "paymentStatus",
-      render: (ps: string) => (
-        <Tag color={ps === "PAID" ? "success" : "default"}>{ps || "UNPAID"}</Tag>
-      ),
+      render: (ps: string) => {
+        const isPaid = ps === "PAID" || ps === "SUCCESS";
+        return (
+          <Tag color={isPaid ? "success" : "default"}>
+            {isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+          </Tag>
+        );
+      },
     },
     {
       title: "Thao tác xuất",
@@ -237,7 +249,7 @@ export default function ReportsPage() {
         <Button
           size="small"
           icon={<FilePdfOutlined />}
-          style={{ color: "#cf1322", borderColor: "#ffa39e" }}
+          className={styles.btnPdf}
           onClick={() => handleExportJasperPdf(r.id)}
         >
           Jasper PDF
@@ -247,34 +259,26 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="reports-page-wrapper">
-      <div className="reports-header">
+    <div className={styles.wrapper}>
+      <div className={styles.headerRow}>
         <div>
-          <h2>Báo cáo Doanh thu & Đơn hàng</h2>
-          <p className="subtitle">Tổng hợp chỉ số kinh doanh và xuất báo cáo tài liệu tự động</p>
+          <h2 className={styles.pageTitle}>Báo cáo Doanh thu & Đơn hàng</h2>
+          <p className={styles.pageSubtitle}>Tổng hợp chỉ số kinh doanh và xuất báo cáo tài liệu tự động</p>
         </div>
         <Space>
-          {/* <Button
-            icon={<ReloadOutlined />}
-            onClick={loadData}
-            loading={loading}
-            style={{ minWidth: 165, height: 40 }}
-          >
-            Làm mới
-          </Button> */}
           <Button
             type="primary"
             icon={<FileWordOutlined />}
             loading={wordExporting}
             onClick={handleExportWord}
-            style={{ background: "#2b579a", borderColor: "#2b579a", minWidth: 165, height: 40 }}
+            className={styles.btnWord}
           >
             Xuất Word (.docx)
           </Button>
           <Button
             icon={<DownloadOutlined />}
             onClick={handleExportCsv}
-            style={{ borderColor: "#52c41a", color: "#389e0d", minWidth: 165, height: 40 }}
+            className={styles.btnCsv}
           >
             Xuất Excel/CSV
           </Button>
@@ -287,7 +291,7 @@ export default function ReportsPage() {
           <Select
             value={timeRange}
             onChange={(v) => setTimeRange(v)}
-            style={{ width: 160 }}
+            className={styles.selectTimeRange}
             options={[
               { value: "today", label: "Hôm nay" },
               { value: "7days", label: "7 ngày qua" },
@@ -299,20 +303,22 @@ export default function ReportsPage() {
           <Select
             value={statusFilter}
             onChange={(v) => setStatusFilter(v)}
-            style={{ width: 170 }}
+            className={styles.selectStatus}
             options={[
               { value: "ALL", label: "Tất cả trạng thái" },
-              { value: "PAID", label: "PAID" },
-              { value: "CONFIRMED", label: "CONFIRMED" },
-              { value: "COMPLETED", label: "COMPLETED" },
-              { value: "PENDING", label: "PENDING" },
-              { value: "CANCELLED", label: "CANCELLED" },
+              { value: "PAID", label: "Đã thanh toán" },
+              { value: "CONFIRMED", label: "Đã xác nhận" },
+              { value: "PROCESSING", label: "Đang xử lý / Giao" },
+              { value: "COMPLETED", label: "Hoàn thành" },
+              { value: "PENDING", label: "Chờ duyệt" },
+              { value: "AWAITING_PAYMENT", label: "Chờ thanh toán" },
+              { value: "CANCELLED", label: "Đã hủy" },
             ]}
           />
         </Space>
       </div>
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
+      <Row gutter={16} className={styles.statRow}>
         <Col span={6}>
           <Card size="small" className="stat-card">
             <Statistic
@@ -357,7 +363,7 @@ export default function ReportsPage() {
         </Col>
       </Row>
 
-      <div style={{ marginBottom: 12, fontWeight: 600, color: "#333" }}>
+      <div className={styles.tableSummaryHeader}>
         Chi tiết danh sách đơn hàng ({filteredOrders.length} đơn)
       </div>
 

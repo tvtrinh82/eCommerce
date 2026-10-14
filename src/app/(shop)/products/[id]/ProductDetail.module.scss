@@ -1,0 +1,491 @@
+.pageRoot {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  padding: 24px 0 64px;
+
+  @media (max-width: 768px) {
+    padding-bottom: 96px; /* Reserve space for sticky bottom bar */
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
+}
+
+/* Mobile Top Nav */
+.mobileTopBar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+.topBarTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.topBarActions {
+  display: flex;
+  gap: 8px;
+}
+
+.navIconBtn {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #262626;
+  cursor: pointer;
+}
+
+.activeWishlist {
+  background: #fff1f0;
+}
+
+.desktopBreadcrumb {
+  margin-bottom: 24px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+/* Gallery */
+.galleryWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mainImageCard {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 420px;
+
+  @media (max-width: 768px) {
+    min-height: 300px;
+    padding: 20px;
+  }
+}
+
+.tagBadge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #e6f4ff;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.mainImage {
+  max-height: 360px;
+  max-width: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.04);
+  }
+
+  @media (max-width: 768px) {
+    max-height: 260px;
+  }
+}
+
+.thumbnailsRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.thumbBtn {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: #ffffff;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &:hover {
+    border-color: #d6e4ff;
+  }
+}
+
+.thumbActive {
+  border-color: #1677ff !important;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.2);
+}
+
+/* Details Column */
+.detailsWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandSubtitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1677ff;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.productTitle {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1f1f1f;
+  margin: 0 0 12px;
+  line-height: 1.25;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stars {
+  font-size: 15px !important;
+  color: #faad14 !important;
+}
+
+.ratingText {
+  font-size: 13.5px;
+  color: #8c8c8c;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.price {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1677ff;
+
+  @media (max-width: 768px) {
+    font-size: 26px;
+  }
+}
+
+.oldPrice {
+  font-size: 18px;
+  color: #8c8c8c;
+  text-decoration: line-through;
+}
+
+.stockStatus {
+  font-size: 13px;
+  color: #389e0d;
+  font-weight: 600;
+  background: #f6ffed;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+/* Specs Pills */
+.specsPills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.specPill {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.pillLabel {
+  font-size: 11px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+}
+
+.pillVal {
+  font-size: 13px;
+  color: #1f1f1f;
+  margin-top: 2px;
+}
+
+/* Option Sections */
+.optionSection {
+  margin-bottom: 20px;
+}
+
+.optionLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f1f1f;
+  margin-bottom: 10px;
+
+  span {
+    color: #1677ff;
+    font-weight: 600;
+  }
+}
+
+.colorDotsRow {
+  display: flex;
+  gap: 12px;
+}
+
+.colorDot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #d9d9d9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.colorDotActive {
+  box-shadow: 0 0 0 2px #1677ff !important;
+  transform: scale(1.1);
+}
+
+.storageGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.storageBtn {
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #1677ff;
+  }
+}
+
+.storageActive {
+  border-color: #1677ff !important;
+  background: #e6f4ff !important;
+
+  .storageVal {
+    color: #1677ff;
+  }
+}
+
+.storageVal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.storageAdd {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+/* CTA Desktop */
+.ctaDesktopRow {
+  display: flex;
+  gap: 12px;
+  margin: 28px 0;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.qtyStepper {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    width: 40px;
+    height: 48px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover {
+      background: #e8e8e8;
+      color: #1677ff;
+    }
+  }
+
+  span {
+    padding: 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+}
+
+.addCartBtn {
+  flex: 1;
+  height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 20px rgba(22, 119, 255, 0.3);
+}
+
+.buyNowBtn {
+  flex: 1;
+  height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-color: #1677ff !important;
+  color: #1677ff !important;
+
+  &:hover {
+    background: #e6f4ff !important;
+  }
+}
+
+.assuranceList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+.assuranceItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #595959;
+}
+
+.asIcon {
+  color: #1677ff;
+  font-size: 16px;
+}
+
+/* Sticky Bottom Bar for Mobile Viewports */
+.mobileStickyBottom {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 16px;
+  z-index: 999;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+.stickyPriceWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.stickyPrice {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1677ff;
+}
+
+.stickySpec {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+.stickyActions {
+  flex: 1;
+  max-width: 180px;
+}
+
+.stickyAddBtn {
+  width: 100%;
+  height: 44px !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+}

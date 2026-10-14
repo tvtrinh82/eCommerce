@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Form, Input, Button, Typography, message, Card } from "antd";
+import { Form, Input, Button, Typography, App, Card } from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -16,6 +16,7 @@ import {
 } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import styles from "./SharedAuthCard.module.scss";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,6 +25,7 @@ interface SharedAuthProps {
 }
 
 export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
+  const { message: messageApi } = App.useApp();
   const [isSignUp, setIsSignUp] = useState(initialSignUp);
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
@@ -86,7 +88,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
         localStorage.setItem("role", userRole);
       }
 
-      message.success("Đăng nhập thành công!");
+      messageApi.success("Đăng nhập thành công!");
 
       if (userRole === "ADMIN" || userRole === "PRODUCT_OWNER") {
         router.push("/admin");
@@ -94,7 +96,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
         router.push("/");
       }
     } catch (error: any) {
-      message.error(error.message);
+      messageApi.error(error.message);
     } finally {
       setLoginLoading(false);
     }
@@ -123,7 +125,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
 
       setIsRegisterSuccess(true);
     } catch (error: any) {
-      message.error(error.message);
+      messageApi.error(error.message);
     } finally {
       setRegisterLoading(false);
     }
@@ -132,23 +134,14 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
   if (isRegisterSuccess) {
     return (
       <div className="auth-wrapper">
-        <Card
-          style={{
-            width: 440,
-            borderRadius: 24,
-            boxShadow: "0 14px 28px rgba(0,0,0,0.06)",
-            textAlign: "center",
-            padding: "24px 16px",
-            border: "1px solid #e4e4e7",
-          }}
-        >
-          <div style={{ fontSize: 52, color: "#18181b", marginBottom: 14 }}>
+        <Card className={styles.successCard}>
+          <div className={styles.successIcon}>
             <CheckCircleOutlined />
           </div>
-          <Title level={3} style={{ marginBottom: 12, color: "#18181b" }}>
+          <Title level={3} className={styles.successTitle}>
             Đăng ký tài khoản thành công!
           </Title>
-          <Text type="secondary" style={{ fontSize: 14, display: "block", marginBottom: 24, lineHeight: 1.6 }}>
+          <Text type="secondary" className={styles.successText}>
             Chúng tôi đã gửi một email kích hoạt tới địa chỉ hộp thư của bạn. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.
           </Text>
           <Button
@@ -198,7 +191,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
             <Form.Item
               name="name"
               rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
-              style={{ width: "100%", marginBottom: 8 }}
+              className={styles.formItemSmallGap}
             >
               <Input prefix={<UserOutlined />} placeholder="Họ và tên" className="custom-input" />
             </Form.Item>
@@ -211,7 +204,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
                 { type: "email", message: "Email không hợp lệ!" },
                 { pattern: /@gmail\.com$/, message: "Email phải có đuôi @gmail.com" },
               ]}
-              style={{ width: "100%", marginBottom: 8 }}
+              className={styles.formItemSmallGap}
             >
               <Input prefix={<MailOutlined />} placeholder="Email (@gmail.com)" className="custom-input" />
             </Form.Item>
@@ -224,7 +217,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
                 { required: true, message: "Vui lòng nhập số điện thoại!" },
                 { pattern: /^0\d{9}$/, message: "SĐT bắt đầu bằng 0 và đủ 10 số" },
               ]}
-              style={{ width: "100%", marginBottom: 8 }}
+              className={styles.formItemSmallGap}
             >
               <Input prefix={<PhoneOutlined />} placeholder="Số điện thoại" maxLength={10} className="custom-input" />
             </Form.Item>
@@ -239,7 +232,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
                   message: "Mật khẩu ≥8 ký tự, có chữ hoa & ký tự đặc biệt",
                 },
               ]}
-              style={{ width: "100%", marginBottom: 8 }}
+              className={styles.formItemSmallGap}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" className="custom-input" />
             </Form.Item>
@@ -258,7 +251,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
                   },
                 }),
               ]}
-              style={{ width: "100%", marginBottom: 14 }}
+              className={styles.formItemMediumGap}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Xác nhận mật khẩu" className="custom-input" />
             </Form.Item>
@@ -303,7 +296,7 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
                 { required: true, message: "Vui lòng nhập Email!" },
                 { type: "email", message: "Email không hợp lệ!" },
               ]}
-              style={{ width: "100%", marginBottom: 12 }}
+              className={styles.formItemEmailLogin}
             >
               <Input prefix={<MailOutlined />} placeholder="Địa chỉ Email" className="custom-input" />
             </Form.Item>
@@ -311,12 +304,12 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
             <Form.Item
               name="password"
               rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-              style={{ width: "100%", marginBottom: 6 }}
+              className={styles.formItemPasswordLogin}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" className="custom-input" />
             </Form.Item>
 
-            <div style={{ width: "100%", maxWidth: 290, margin: "0 auto 14px", textAlign: "right" }}>
+            <div className={styles.forgotPasswordWrap}>
               <Link href="/auth/forgot-password" className="forgot-link">
                 Quên mật khẩu?
               </Link>
@@ -349,10 +342,10 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
               </div>
               <div className="brand-motto">PREMIUM SHOPPING DESTINATION</div>
 
-              <Title level={2} style={{ color: "#ffffff", marginBottom: 10, marginTop: 4, fontSize: 28, fontWeight: 750 }}>
+              <Title level={2} className={styles.overlayHeading}>
                 Chào mừng trở lại!
               </Title>
-              <Paragraph style={{ color: "#d1d5db", fontSize: 14.5, maxWidth: 340, textAlign: "center", lineHeight: 1.7 }}>
+              <Paragraph className={styles.overlayParagraph}>
                 Kết nối lại với <strong>eCommerce</strong> để nhận ưu đãi đặc quyền và khám phá thế giới công nghệ đỉnh cao!
               </Paragraph>
               <button
@@ -380,10 +373,10 @@ export function SharedAuthCard({ initialSignUp = false }: SharedAuthProps) {
               </div>
               <div className="brand-motto">SMART • FAST • RELIABLE</div>
 
-              <Title level={2} style={{ color: "#ffffff", marginBottom: 10, marginTop: 4, fontSize: 28, fontWeight: 750 }}>
+              <Title level={2} className={styles.overlayHeading}>
                 Xin chào bạn!
               </Title>
-              <Paragraph style={{ color: "#d1d5db", fontSize: 14.5, maxWidth: 340, textAlign: "center", lineHeight: 1.7 }}>
+              <Paragraph className={styles.overlayParagraph}>
                 Chào mừng bạn đến với <strong>eCommerce</strong>. Đăng ký tài khoản ngay hôm nay để trải nghiệm mua sắm hiện đại &amp; giao hàng siêu tốc!
               </Paragraph>
               <button

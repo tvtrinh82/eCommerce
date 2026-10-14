@@ -5,6 +5,8 @@ import { Result, Button, Card } from "antd";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import styles from "./ActivateSuccess.module.scss";
+
 export default function ActivateSuccessPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
@@ -18,8 +20,8 @@ export default function ActivateSuccessPage() {
   }, []);
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "#f0f2f5" }}>
-      <Card style={{ width: 500, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+    <div className={styles.container}>
+      <Card className={styles.card}>
         <Result
           status="success"
           title="Xác thực tài khoản thành công!"
@@ -33,7 +35,7 @@ export default function ActivateSuccessPage() {
               type="primary" 
               key="login" 
               size="large"
-              style={{ borderRadius: 8, width: "100%", maxWidth: 200 }}
+              className={styles.loginBtn}
               onClick={() => {
                 if (email) {
                   router.push(`/auth/login?email=${encodeURIComponent(email)}`);

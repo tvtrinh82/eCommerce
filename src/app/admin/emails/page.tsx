@@ -6,6 +6,7 @@ import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { apiClient } from "@/lib/api-client";
 import dayjs from "dayjs";
+import styles from "./Emails.module.scss";
 
 export interface FailedEmailItem {
   id: string | number;
@@ -124,14 +125,14 @@ export default function FailedEmailsPage() {
       dataIndex: "recipient",
       key: "recipient",
       width: "22%",
-      render: (text: string) => <span style={{ fontWeight: 500, color: "#1f1f1f" }}>{text}</span>,
+      render: (text: string) => <span className={styles.recipientText}>{text}</span>,
     },
     {
       title: "Loại mail",
       dataIndex: "emailType",
       key: "emailType",
       width: "16%",
-      render: (text: string) => <span style={{ fontFamily: "monospace", fontSize: 13 }}>{text}</span>,
+      render: (text: string) => <span className={styles.emailTypeText}>{text}</span>,
     },
     {
       title: "Số lần thử",
@@ -148,16 +149,7 @@ export default function FailedEmailsPage() {
       width: "26%",
       render: (errorMsg: string) => (
         <Tooltip title={errorMsg} placement="topLeft">
-          <div
-            style={{
-              maxWidth: 240,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              color: "#cf1322",
-              cursor: "pointer",
-            }}
-          >
+          <div className={styles.errorText}>
             {errorMsg || "(Không có log lỗi)"}
           </div>
         </Tooltip>
@@ -169,7 +161,7 @@ export default function FailedEmailsPage() {
       key: "createdAt",
       width: "14%",
       render: (time: string) => (
-        <span style={{ color: "#595959" }}>
+        <span className={styles.dateText}>
           {time ? dayjs(time).format("DD/MM/YYYY HH:mm") : "-"}
         </span>
       ),
@@ -182,13 +174,7 @@ export default function FailedEmailsPage() {
       render: (_: any, record: FailedEmailItem) => (
         <Button
           type="default"
-          style={{
-            borderColor: "#1677ff",
-            color: "#1677ff",
-            borderRadius: 6,
-            fontWeight: 500,
-            minWidth: 80,
-          }}
+          className={styles.resendBtn}
           loading={actionLoadingId === record.id}
           disabled={record.status !== "FAILED"}
           onClick={() => handleResend(record)}
@@ -200,33 +186,18 @@ export default function FailedEmailsPage() {
   ];
 
   return (
-    <div
-      style={{
-        background: "#ffffff",
-        border: "1px solid #d9d9d9",
-        borderRadius: 8,
-        padding: "20px 24px",
-        margin: "0 auto",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111111" }}>
+    <div className={styles.container}>
+      <div className={styles.headerRow}>
+        <h2 className={styles.headerTitle}>
           Mail gửi lỗi
         </h2>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 14, color: "#333333" }}>Trạng thái:</span>
+        <div className={styles.filterGroup}>
+          <span className={styles.filterLabel}>Trạng thái:</span>
           <Select
             value={statusFilter}
             onChange={(val) => setStatusFilter(val)}
-            style={{ width: 140, height: 36 }}
+            className={styles.filterSelect}
             options={[
               { value: "FAILED", label: "FAILED" },
               { value: "ALL", label: "Tất cả" },
@@ -234,14 +205,6 @@ export default function FailedEmailsPage() {
               { value: "SENT", label: "SENT" },
             ]}
           />
-          {/* <Button
-            icon={<ReloadOutlined />}
-            onClick={() => fetchEmails(pagination.current, pagination.pageSize, statusFilter)}
-            loading={loading}
-            style={{ height: 36, padding: "0 16px" }}
-          >
-            Làm mới
-          </Button> */}
         </div>
       </div>
 

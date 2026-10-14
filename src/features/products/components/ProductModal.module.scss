@@ -1,0 +1,76 @@
+.modalTitle {
+  font-size: 20px;
+}
+
+.uploadIconText {
+  margin-top: 8px;
+}
+
+.formContainer {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formRow {
+  display: flex;
+  gap: 24px;
+}
+
+.leftColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.twoColumnRow {
+  display: flex;
+  gap: 16px;
+}
+
+.flexOne {
+  flex: 1;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.required {
+  color: #ff4d4f;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.errorMessage {
+  color: #ff4d4f;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.rightColumn {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.productAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: #8c8c8c;
+  text-align: center;
+  margin-top: 8px;
+}

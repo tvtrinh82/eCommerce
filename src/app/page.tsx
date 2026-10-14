@@ -1,279 +1,225 @@
 "use client";
 
-import React, { useState } from "react";
-import { Typography, Card, Row, Col, Button, message, Drawer, List, Space, Carousel, Tooltip, theme, Rate } from "antd";
-import { ShoppingCartOutlined, HeartOutlined, ThunderboltOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
-import ClientLayout from "@/components/shared/ClientLayout";
-import { useThemeStore } from "@/store/themeStore";
-import { useCartStore } from "@/store/cartStore";
-
+import React, { useState, useEffect } from "react";
+import { Row, Col, Typography, Input, Select, Button, Spin } from "antd";
+import {
+  FireOutlined,
+  ThunderboltOutlined,
+  FilterOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
 import { useSearchParams } from "next/navigation";
+import Header from "@/components/ecommerce/Header";
+import HeroCarousel from "@/components/ecommerce/HeroCarousel";
+import ValueProps from "@/components/ecommerce/ValueProps";
+import ProductCard from "@/components/ecommerce/ProductCard";
+import PromoBanner from "@/components/ecommerce/PromoBanner";
+import BrandGrid from "@/components/ecommerce/BrandGrid";
+import Newsletter from "@/components/ecommerce/Newsletter";
+import Footer from "@/components/ecommerce/Footer";
+import CartDrawer from "@/components/ecommerce/CartDrawer";
+import { MOCK_POPULAR_PRODUCTS, MOCK_BEST_DEALS } from "@/lib/mockData";
+import { apiClient } from "@/lib/api-client";
+import { Product } from "@/types";
+import styles from "./Home.module.scss";
 
 const { Title, Text } = Typography;
 
-export default function ClientStorefront() {
-  const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const router = useRouter();
+export default function ECommerceHomePage() {
   const searchParams = useSearchParams();
   const search = searchParams?.get("search") || "";
-  const { isDarkMode } = useThemeStore();
-  const { addToCart, setCartVisible } = useCartStore();
-  const { token } = theme.useToken();
 
-  React.useEffect(() => {
-    const fetchProducts = async () => {
+  const [products, setProducts] = useState<Product[]>(MOCK_POPULAR_PRODUCTS);
+  const [bestDeals, setBestDeals] = useState<Product[]>(MOCK_BEST_DEALS);
+  const [selectedBrand, setSelectedBrand] = useState<string>("All");
+  const [sortBy, setSortBy] = useState<string>("featured");
+  const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
+
+  // Tải danh sách sản phẩm thực tế từ Backend API (bao gồm sản phẩm do PO thêm vào)
+  useEffect(() => {
+    const fetchApiProducts = async () => {
       try {
-        const res = await fetch("/api/products?page=0&size=100&sort=id,desc");
-        if (res.ok) {
-          const json = await res.json();
-          const data = json.data?.content || json.data || [];
-          setProducts(data);
+        setIsLoadingApi(true);
+        const res: any = await apiClient.get("/products?page=0&size=100&status=ACTIVE");
+        const list = res.data?.content || res.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          const mapped: Product[] = list.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand || "Chính Hãng",
+            model: item.category || "Tiêu chuẩn",
+            tag: item.stock > 0 ? "Mới lên kệ" : "Hết hàng",
+            specs: item.specs || (item.stock !== undefined ? `Kho còn ${item.stock} sản phẩm` : ""),
+            price: Number(item.price || 0),
+            oldPrice: item.oldPrice ? Number(item.oldPrice) : Math.round(Number(item.price || 0) * 1.1),
+            discountPercent: item.oldPrice ? Math.round((1 - item.price / item.oldPrice) * 100) : 10,
+            rating: 5.0,
+            reviewsCount: 1,
+            imageUrl: item.imageUrl || item.image || item.image_url || "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80",
+            inStock: (item.stock ?? 0) > 0,
+            stockCount: item.stock ?? 0,
+          }));
+
+          // Đưa sản phẩm API (do PO thêm vào) lên đầu danh sách
+          setProducts(mapped);
+          setBestDeals(mapped.slice(0, 4));
         }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
+      } catch (err) {
+        console.warn("Không thể tải sản phẩm từ backend API, sử dụng mockData làm fallback:", err);
+      } finally {
+        setIsLoadingApi(false);
       }
     };
-    fetchProducts();
+
+    fetchApiProducts();
   }, []);
 
-  const filteredProducts = products.filter(p => 
-    p.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter & sort products based on search or brand
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesSearch =
+        !search ||
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.brand.toLowerCase().includes(search.toLowerCase()) ||
+        p.specs.toLowerCase().includes(search.toLowerCase());
+      const matchesBrand = selectedBrand === "All" || p.brand === selectedBrand;
+      return matchesSearch && matchesBrand;
+    })
+    .sort((a, b) => {
+      if (sortBy === "price-asc") return a.price - b.price;
+      if (sortBy === "price-desc") return b.price - a.price;
+      if (sortBy === "rating") return b.rating - a.rating;
+      return 0;
+    });
 
   return (
-    <ClientLayout>
-      {!search && (
-        <>
-          {/* HERO BANNER CAROUSEL */}
-          <Carousel autoplay effect="fade">
-            <div>
-              <div style={{ height: 600, backgroundColor: isDarkMode ? "#000" : "#f5f5f7", backgroundImage: isDarkMode ? 'linear-gradient(180deg, #1c1c1e 0%, #000 100%)' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: isDarkMode ? '#fff' : '#1d1d1f' }}>
-                <Title style={{ color: isDarkMode ? '#fff' : '#1d1d1f', fontSize: 64, margin: 0, fontWeight: 700, letterSpacing: -1 }}>iPhone 16 Pro</Title>
-                <Title level={3} style={{ color: isDarkMode ? '#a1a1a6' : '#86868b', marginTop: 10, fontWeight: 400, letterSpacing: 1 }}>Titan. Chắc. Nhẹ. Pro.</Title>
-                <div style={{ marginTop: 30 }}>
-                  <Button type="primary" size="large" shape="round" style={{ marginRight: 16, height: 44, padding: '0 24px', fontSize: 16, fontWeight: 500 }}>Mua ngay</Button>
-                  <Button ghost={isDarkMode} size="large" shape="round" style={{ height: 44, padding: '0 24px', fontSize: 16, fontWeight: 500, borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : '#ccc' }}>Tìm hiểu thêm</Button>
+    <div className={styles.pageRoot}>
+      {/* 1. Header with Search, Wishlist, Cart & Profile */}
+      <Header />
+
+      {/* Cart Drawer */}
+      <CartDrawer />
+
+      {/* Main Content */}
+      <main className={styles.main}>
+        {!search && (
+          <>
+            {/* 2. Hero Banner Carousel */}
+            <HeroCarousel />
+
+            {/* 3. Value Proposition Bar */}
+            <ValueProps />
+          </>
+        )}
+
+        {/* 4. Popular Smartphones Section */}
+        <section className={styles.section} id="popular">
+          <div className={styles.container}>
+            <div className={styles.sectionHeader}>
+              <div>
+                <span className={styles.subHeading}>
+                  <FireOutlined style={{ marginRight: 6, color: "#ff4d4f" }} />
+                  XU HƯỚNG CÔNG NGHỆ MỚI NHẤT
+                </span>
+                <h2 className={styles.heading}>
+                  {search ? `Kết quả tìm kiếm cho "${search}"` : "Điện thoại thông minh phổ biến"}
+                </h2>
+              </div>
+
+              {/* Filters & Sorting */}
+              <div className={styles.filterActions}>
+                <div className={styles.brandPills}>
+                  {["Tất cả", "Apple", "Samsung", "Google", "OnePlus"].map((brand) => {
+                    const actualBrand = brand === "Tất cả" ? "All" : brand;
+                    return (
+                      <button
+                        key={brand}
+                        className={`${styles.pillBtn} ${
+                          selectedBrand === actualBrand ? styles.pillActive : ""
+                        }`}
+                        onClick={() => setSelectedBrand(actualBrand)}
+                      >
+                        {brand}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                <Select
+                  value={sortBy}
+                  onChange={(val) => setSortBy(val)}
+                  className={styles.sortSelect}
+                  options={[
+                    { value: "featured", label: "Nổi bật nhất" },
+                    { value: "price-asc", label: "Giá: Thấp đến Cao" },
+                    { value: "price-desc", label: "Giá: Cao đến Thấp" },
+                    { value: "rating", label: "Đánh giá cao nhất" },
+                  ]}
+                />
               </div>
             </div>
-            <div>
-              <div style={{ height: 600, backgroundColor: isDarkMode ? "#050505" : "#e5e5ea", backgroundImage: isDarkMode ? 'radial-gradient(circle at center, #1a1a1c 0%, #050505 100%)' : 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: isDarkMode ? '#fff' : '#1d1d1f' }}>
-                <Title style={{ color: isDarkMode ? '#fff' : '#1d1d1f', fontSize: 64, margin: 0, fontWeight: 700, letterSpacing: -1 }}>MacBook Pro M3</Title>
-                <Title level={3} style={{ color: isDarkMode ? '#a1a1a6' : '#86868b', marginTop: 10, fontWeight: 400, letterSpacing: 1 }}>Sức mạnh vô hạn. Đột phá không tưởng.</Title>
-                <div style={{ marginTop: 30 }}>
-                  <Button type="primary" size="large" shape="round" style={{ marginRight: 16, height: 44, padding: '0 24px', fontSize: 16, fontWeight: 500 }}>Mua ngay</Button>
-                </div>
-              </div>
-            </div>
-          </Carousel>
 
-          <div style={{ padding: "40px 10%", maxWidth: 1400, margin: "0 auto" }}>
-            {/* FEATURED PRODUCTS SECTION */}
-            <div style={{ marginBottom: 60 }}>
-              {['iPhone', 'iPad', 'Mac', 'Watch', 'Phụ kiện'].map((category) => {
-                // Lọc sản phẩm theo danh mục (dựa vào tên)
-                let categoryProducts = products.filter(p => {
-                  const nameLower = (p.name || '').toLowerCase();
-                  if (category === 'iPhone') return nameLower.includes('iphone');
-                  if (category === 'iPad') return nameLower.includes('ipad');
-                  if (category === 'Mac') return nameLower.includes('mac');
-                  if (category === 'Watch') return nameLower.includes('watch');
-                  if (category === 'Phụ kiện') return !nameLower.includes('iphone') && !nameLower.includes('ipad') && !nameLower.includes('mac') && !nameLower.includes('watch');
-                  return false;
-                });
-                
-                // QUAN TRỌNG: Ưu tiên lọc và hiển thị tất cả các sản phẩm "Có sẵn" lên đầu danh sách trước
-                categoryProducts = categoryProducts.sort((a, b) => {
-                  const aInStock = (a.stock && a.stock > 0) ? 1 : 0;
-                  const bInStock = (b.stock && b.stock > 0) ? 1 : 0;
-                  return bInStock - aInStock; // 1 (Có sẵn) lên trước 0 (Hết hàng)
-                });
-
-                if (categoryProducts.length === 0) return null;
-
-                return (
-                  <div key={category} style={{ marginBottom: 60 }}>
-                    <Title level={2} style={{ textAlign: "center", marginBottom: 30, fontSize: 32, fontWeight: 700, color: isDarkMode ? '#fff' : '#1d1d1f' }}>{category}</Title>
-                    <Row gutter={[24, 24]}>
-                      {categoryProducts.map((item) => (
-                        <Col xs={24} sm={12} md={8} lg={7} key={item.id}>
-                          <Card
-                            hoverable
-                            style={{ borderRadius: 20, overflow: 'hidden', border: isDarkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', boxShadow: isDarkMode ? '0 10px 30px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease, box-shadow 0.3s ease', backgroundColor: isDarkMode ? '#2a2a2c' : '#ffffff', height: '100%' }}
-                            styles={{ body: { padding: '24px', display: 'flex', flexDirection: 'column', flexGrow: 1, backgroundColor: isDarkMode ? '#2a2a2c' : '#ffffff', height: '100%' } }}
-                            onClick={() => router.push(`/products/${item.id}`)}
-                            cover={
-                              <div style={{ padding: 30, display: 'flex', justifyContent: 'center', backgroundColor: isDarkMode ? '#333333' : '#f5f5f7', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.02)' : 'none', position: 'relative' }}>
-                                <img className="product-card-img" alt={item.name} src={item.imageUrl || "https://placehold.co/600x600?text=No+Image"} style={{ height: 200, objectFit: "contain", width: "100%" }} />
-                                {/* Hot Sale Badge Monochrome */}
-                                <div style={{ 
-                                  position: 'absolute', 
-                                  top: 12, 
-                                  left: 12, 
-                                  background: item.stock > 0 ? (isDarkMode ? '#e90a0aff' : '#e51030ff') : '#71717a', 
-                                  color: item.stock > 0 ? (isDarkMode ? '#f8f8fcd5' : '#ffffff') : '#ffffff', 
-                                  padding: '4px 12px', 
-                                  borderRadius: 9999, 
-                                  fontSize: 12, 
-                                  fontWeight: 600,
-                                  boxShadow: '0 2px 8px rgba(236, 19, 19, 0.15)'
-                                }}>
-                                  {item.stock > 0 ? "Hot Sale" : "Hết hàng"}
-                                </div>
-                              </div>
-                            }
-                          >
-                            <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                              <div>
-                                <div style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? '#fff' : '#1d1d1f', height: 54, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 12, textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased' }}>{item.name}</div>
-                                
-                                <Space style={{ alignItems: 'center' }}>
-                                  <Text strong style={{ color: isDarkMode ? '#ffffff' : '#18181b', fontSize: 20 }}>{item.price?.toLocaleString("vi-VN")} đ</Text>
-                                  <Text delete type="secondary" style={{ fontSize: 14, color: isDarkMode ? '#a1a1aa' : '#71717a' }}>{(item.price * 1.1).toLocaleString("vi-VN")} đ</Text>
-                                </Space>
-                              </div>
-                              
-                              <div style={{ marginTop: 16, display: 'flex', gap: 8, flexDirection: 'column' }}>
-                                <Button
-                                  type="primary"
-                                  shape="round"
-                                  disabled={!item.stock || item.stock === 0}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (item.stock > 0) {
-                                      addToCart({ productId: item.id, name: item.name, price: item.price, quantity: 1, image: item.imageUrl || "https://placehold.co/600x600?text=No+Image" });
-                                      setCartVisible(false);
-                                      router.push("/orders/new");
-                                    }
-                                  }}
-                                  style={{ 
-                                    backgroundColor: (item.stock > 0) ? (isDarkMode ? '#ffffff' : '#18181b') : undefined, 
-                                    color: (item.stock > 0) ? (isDarkMode ? '#18181b' : '#ffffff') : undefined,
-                                    border: 'none',
-                                    fontWeight: 600,
-                                    height: 40 
-                                  }}
-                                  block
-                                >
-                                  {(item.stock > 0) ? "Mua ngay" : "Hết hàng"}
-                                </Button>
-                                
-                                <Button 
-                                  shape="round" 
-                                  icon={<ShoppingCartOutlined />} 
-                                  style={{ 
-                                    backgroundColor: isDarkMode ? '#27272a' : '#f4f4f5', 
-                                    color: isDarkMode ? '#f4f4f5' : '#18181b', 
-                                    border: isDarkMode ? '1px solid #3f3f46' : '1px solid #e4e4e7', 
-                                    fontWeight: 500,
-                                    height: 40 
-                                  }}
-                                  disabled={!item.stock || item.stock === 0}
-                                  onClick={(e) => { 
-                                    e.stopPropagation(); 
-                                    addToCart({ productId: item.id, name: item.name, price: item.price, quantity: 1, image: item.imageUrl || "https://placehold.co/600x600?text=No+Image" }); 
-                                    message.success(`Đã thêm ${item.name} vào giỏ hàng`);
-                                  }}
-                                  block
-                                >
-                                  Thêm vào giỏ hàng
-                                </Button>
-                              </div>
-                            </div>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-
-      {search && (
-        <div style={{ padding: "40px 10%", maxWidth: 1400, margin: "0 auto", minHeight: "60vh" }}>
-          <Title level={2} style={{ marginBottom: 30, fontSize: 28, fontWeight: 700 }}>Kết quả tìm kiếm cho: "{search}"</Title>
-          {filteredProducts.length === 0 ? (
-            <div style={{ textAlign: 'center', marginTop: 50 }}>
-              <Text type="secondary" style={{ fontSize: 16 }}>Không tìm thấy sản phẩm nào.</Text>
-            </div>
-          ) : (
-            <Row gutter={[24, 24]}>
-              {filteredProducts.map((item) => (
-                <Col xs={24} sm={12} md={8} lg={7} key={item.id}>
-                  <Card
-                    hoverable
-                    style={{ borderRadius: 20, overflow: 'hidden', border: isDarkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', boxShadow: isDarkMode ? '0 10px 30px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease, box-shadow 0.3s ease', backgroundColor: isDarkMode ? '#2a2a2c' : '#ffffff', height: '100%' }}
-                    styles={{ body: { padding: '24px', display: 'flex', flexDirection: 'column', flexGrow: 1, backgroundColor: isDarkMode ? '#2a2a2c' : '#ffffff', height: '100%' } }}
-                    onClick={() => router.push(`/products/${item.id}`)}
-                    cover={
-                      <div style={{ padding: 30, display: 'flex', justifyContent: 'center', backgroundColor: isDarkMode ? '#e00b0bff' : '#f5f5f7', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.02)' : 'none', position: 'relative' }}>
-                        <img className="product-card-img" alt={item.name} src={item.imageUrl || "https://placehold.co/600x600?text=No+Image"} style={{ height: 200, objectFit: "contain", width: "100%" }} />
-                        {/* Hot Sale Badge */}
-                        <div style={{ position: 'absolute', top: 12, left: 12, background: 'linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>
-                          {item.stock > 0 ? "Hot Sale" : "Hết hàng"}
-                        </div>
-                      </div>
-                    }
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? '#fff' : '#1d1d1f', height: 54, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 12, textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased' }}>{item.name}</div>
-                        
-                        <Space style={{ alignItems: 'center' }}>
-                          <Text strong style={{ color: token.colorPrimary, fontSize: 20 }}>{item.price?.toLocaleString("vi-VN")} đ</Text>
-                          <Text delete type="secondary" style={{ fontSize: 14, color: isDarkMode ? '#a1a1a6' : '#86868b' }}>{(item.price * 1.1).toLocaleString("vi-VN")} đ</Text>
-                        </Space>
-                      </div>
-                      
-                      <div style={{ marginTop: 16, display: 'flex', gap: 8, flexDirection: 'column' }}>
-                        <Button
-                          type="primary"
-                          shape="round"
-                          disabled={!item.stock || item.stock === 0}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (item.stock > 0) {
-                                      addToCart({ productId: item.id, name: item.name, price: item.price, quantity: 1, image: item.imageUrl || "https://placehold.co/600x600?text=No+Image" });
-                                      setCartVisible(false);
-                                      router.push("/orders/new");
-                            }
-                          }}
-                          style={{ backgroundColor: (item.stock > 0) ? '#0066cc' : undefined, height: 40 }}
-                          block
-                        >
-                          {(item.stock > 0) ? "Mua ngay" : "Hết hàng"}
-                        </Button>
-                        
-                        <Button 
-                          shape="round" 
-                          icon={<ShoppingCartOutlined />} 
-                          style={{ backgroundColor: isDarkMode ? '#333' : '#e5e5ea', color: isDarkMode ? '#fff' : '#000', border: 'none', height: 40 }}
-                          disabled={!item.stock || item.stock === 0}
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            addToCart({ productId: item.id, name: item.name, price: item.price, quantity: 1, image: item.imageUrl || "https://placehold.co/600x600?text=No+Image" }); 
-                            message.success(`Đã thêm ${item.name} vào giỏ hàng`);
-                          }}
-                          block
-                        >
-                          Thêm vào giỏ hàng
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
+            {/* Products Grid: 4 columns on PC, responsive down to 1-2 on mobile */}
+            <Row gutter={[20, 24]}>
+              {filteredProducts.map((product) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                  <ProductCard product={product} />
                 </Col>
               ))}
             </Row>
-          )}
-        </div>
-      )}
-    </ClientLayout>
+
+            {filteredProducts.length === 0 && (
+              <div className={styles.emptyResults}>
+                <Text type="secondary">
+                  Không tìm thấy điện thoại nào phù hợp với từ khóa của bạn. Hãy thử tìm kiếm "iPhone", "Samsung", hoặc "Xiaomi".
+                </Text>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {!search && (
+          <>
+            {/* 5. Limited Time Promotional Banner */}
+            <PromoBanner />
+
+            {/* 6. Shop by Brand */}
+            <BrandGrid />
+
+            {/* 7. Best Deals Grid */}
+            <section className={styles.section} id="deals">
+              <div className={styles.container}>
+                <div className={styles.sectionHeader}>
+                  <div>
+                    <span className={styles.subHeading}>
+                      <ThunderboltOutlined style={{ marginRight: 6, color: "#faad14" }} />
+                      ƯU ĐÃI SỐ LƯỢNG CÓ HẠN
+                    </span>
+                    <h2 className={styles.heading}>Điện thoại Giảm giá Sốc</h2>
+                  </div>
+                  <span className={styles.headerSubtitle}>
+                    Tiết kiệm tới 30% khi áp dụng phiếu giảm giá trực tiếp tại bước thanh toán.
+                  </span>
+                </div>
+
+                <Row gutter={[20, 24]}>
+                  {bestDeals.map((product) => (
+                    <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                      <ProductCard product={product} badgeType="discount" />
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+            </section>
+
+            {/* 8. Newsletter Subscription */}
+            <Newsletter />
+          </>
+        )}
+      </main>
+
+      {/* 9. Footer */}
+      <Footer />
+    </div>
   );
 }

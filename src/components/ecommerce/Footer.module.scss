@@ -1,0 +1,160 @@
+.footer {
+  background: #ffffff;
+  border-top: 1px solid #f0f2f5;
+  margin-top: 80px;
+  padding: 64px 0 32px;
+
+  @media (max-width: 768px) {
+    margin-top: 48px;
+    padding: 48px 0 24px;
+  }
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #1677ff 0%, #0050b3 100%);
+  color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1f1f1f;
+
+  .highlight {
+    color: #1677ff;
+  }
+}
+
+.brandDesc {
+  color: #8c8c8c;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.socialIcons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.socialBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: #595959;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #1677ff;
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+}
+
+.columnTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f1f1f;
+  margin-bottom: 18px;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 12px;
+
+    a {
+      color: #595959;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #1677ff;
+        padding-left: 2px;
+      }
+    }
+  }
+}
+
+.bottomBar {
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.copyright {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.paymentBadges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
+}
+
+.payBadge {
+  background: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #595959;
+  letter-spacing: 0.3px;
+}
